@@ -32,6 +32,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [claude-skills-library-expert](skills/claude-skills-library-expert/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-skills-library-expert) | [alirezarezvani/claude-skills](https://github.com/alirezarezvani/claude-skills) | 2026-05-16 |
 | [claude-code-agent-harness-architecture](skills/claude-code-agent-harness-architecture/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-agent-harness-architecture) | [lintsinghua/claude-code-book](https://github.com/lintsinghua/claude-code-book) | 2026-05-16 |
 | [claude-code-harness-architecture](skills/claude-code-harness-architecture/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-harness-architecture) | [lintsinghua/claude-code-book](https://github.com/lintsinghua/claude-code-book) | 2026-05-16 |
+| [awesome-claude-code-subagents](skills/awesome-claude-code-subagents/) | [install](https://skills.sh/aradotso/claude-code-skills/awesome-claude-code-subagents) | [VoltAgent/awesome-claude-code-subagents](https://github.com/VoltAgent/awesome-claude-code-subagents) | 2026-05-16 |
 <!-- SKILL_INDEX -->
 
 ---
