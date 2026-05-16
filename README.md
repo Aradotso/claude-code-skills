@@ -29,6 +29,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [claude-code-design-ai](skills/claude-code-design-ai/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-design-ai) | [mikesheehan54/Claude-Code-Design-AI](https://github.com/mikesheehan54/Claude-Code-Design-AI) | 2026-05-16 |
 | [awesome-claude-code-curation](skills/awesome-claude-code-curation/) | [install](https://skills.sh/aradotso/claude-code-skills/awesome-claude-code-curation) | [hesreallyhim/awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code) | 2026-05-16 |
 | [claude-code-templates-cli](skills/claude-code-templates-cli/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-templates-cli) | [davila7/claude-code-templates](https://github.com/davila7/claude-code-templates) | 2026-05-16 |
+| [claude-skills-library-expert](skills/claude-skills-library-expert/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-skills-library-expert) | [alirezarezvani/claude-skills](https://github.com/alirezarezvani/claude-skills) | 2026-05-16 |
 <!-- SKILL_INDEX -->
 
 ---
