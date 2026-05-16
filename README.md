@@ -36,6 +36,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [claude-code-restored-runtime](skills/claude-code-restored-runtime/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-restored-runtime) | [oboard/claude-code-rev](https://github.com/oboard/claude-code-rev) | 2026-05-16 |
 | [awesome-claude-skills](skills/awesome-claude-skills/) | [install](https://skills.sh/aradotso/claude-code-skills/awesome-claude-skills) | [travisvn/awesome-claude-skills](https://github.com/travisvn/awesome-claude-skills) | 2026-05-16 |
 | [claude-code-system-prompts](skills/claude-code-system-prompts/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-system-prompts) | [Piebald-AI/claude-code-system-prompts](https://github.com/Piebald-AI/claude-code-system-prompts) | 2026-05-16 |
+| [claude-code-analysis-research](skills/claude-code-analysis-research/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-analysis-research) | [liuup/claude-code-analysis](https://github.com/liuup/claude-code-analysis) | 2026-05-16 |
 <!-- SKILL_INDEX -->
 
 ---
