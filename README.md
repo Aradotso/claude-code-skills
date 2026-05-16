@@ -22,6 +22,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 |-------|-----------|--------|------|
 | [claude-code-best](skills/claude-code-best/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-best) | [claude-code-best/claude-code](https://github.com/claude-code-best/claude-code) | 2026-05-16 |
 | [claude-code-best-practice](skills/claude-code-best-practice/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-best-practice) | [shanraisshan/claude-code-best-practice](https://github.com/shanraisshan/claude-code-best-practice) | 2026-05-16 |
+| [oh-my-claudecode-multi-agent-orchestration](skills/oh-my-claudecode-multi-agent-orchestration/) | [install](https://skills.sh/aradotso/claude-code-skills/oh-my-claudecode-multi-agent-orchestration) | [Yeachan-Heo/oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode) | 2026-05-16 |
 <!-- SKILL_INDEX -->
 
 ---
