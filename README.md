@@ -28,6 +28,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [aris-autonomous-ml-research](skills/aris-autonomous-ml-research/) | [install](https://skills.sh/aradotso/claude-code-skills/aris-autonomous-ml-research) | [wanshuiyin/Auto-claude-code-research-in-sleep](https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep) | 2026-05-16 |
 | [claude-code-design-ai](skills/claude-code-design-ai/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-design-ai) | [mikesheehan54/Claude-Code-Design-AI](https://github.com/mikesheehan54/Claude-Code-Design-AI) | 2026-05-16 |
 | [awesome-claude-code-curation](skills/awesome-claude-code-curation/) | [install](https://skills.sh/aradotso/claude-code-skills/awesome-claude-code-curation) | [hesreallyhim/awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code) | 2026-05-16 |
+| [claude-code-templates-cli](skills/claude-code-templates-cli/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-templates-cli) | [davila7/claude-code-templates](https://github.com/davila7/claude-code-templates) | 2026-05-16 |
 <!-- SKILL_INDEX -->
 
 ---
