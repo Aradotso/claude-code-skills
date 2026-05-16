@@ -1,15 +1,15 @@
 ---
 name: claude-code-agent-harness-architecture
-description: Deep architectural knowledge of AI Agent Harness design patterns, event loops, tool systems, permission pipelines, and context management for building production-grade AI agents
+description: Deep architectural knowledge of AI Agent Harness design patterns, systems, and implementation based on Claude Code analysis
 triggers:
-  - how do I design an agent harness architecture
-  - explain agent event loop patterns
-  - help me build a tool permission system
-  - how does context compression work in agents
-  - show me agent memory system design
-  - implement a fork-based sub-agent pattern
-  - design an MCP protocol bridge
-  - build an agent configuration hierarchy
+  - how do I build an agent harness
+  - explain agent conversation loop architecture
+  - show me agent tool system design
+  - how does agent permission pipeline work
+  - implement agent context management
+  - design agent memory system
+  - build agent with MCP integration
+  - create agent coordinator pattern
 ---
 
 # Claude Code Agent Harness Architecture
@@ -18,1024 +18,952 @@ triggers:
 
 ## Overview
 
-This skill provides deep architectural knowledge from the 420,000-word analysis of Claude Code's Agent Harness design. It covers the fundamental patterns, design decisions, and implementation strategies for building production-grade AI agents, including:
+This skill provides comprehensive knowledge of Agent Harness architecture—the runtime framework that powers AI agents. Based on deep analysis of Claude Code's production implementation, it covers:
 
-- **Event-driven conversation loops** (async generator patterns)
-- **Tool systems** with concurrent execution and safety guarantees
-- **4-stage permission pipelines** (declare → validate → execute → verify)
-- **Context compression** strategies for token budget management
-- **Memory systems** with fork-based inheritance
-- **Hook-based lifecycle extensibility**
-- **Sub-agent orchestration** patterns
-- **MCP protocol integration**
+- **Conversation loop** patterns (async generators, yield events, termination)
+- **Tool system** protocols (`Tool<I,O,P>`, factory patterns, concurrent execution)
+- **Permission pipeline** (4-stage authorization, safety classifiers)
+- **Context management** (token budgets, compression strategies, circuit breakers)
+- **Memory systems** (4 memory types, fork inheritance)
+- **Hooks & lifecycle** (26 events, 5 hook types)
+- **Sub-agent orchestration** (Fork patterns, Coordinator mode)
+- **MCP integration** (protocol bridges, transport layers)
 
-While based on Claude Code's architecture, these patterns are **framework-agnostic** and applicable to any agent system (LangChain, AutoGen, CrewAI, custom builds).
+**Not a user guide**—this is architectural knowledge for building production-grade agent systems.
 
 ## Core Architecture Principles
 
-### 1. The Five Design Pillars
+### 1. Five Design Pillars
 
 ```typescript
-/**
- * Agent Harness Design Principles (from Ch01)
- */
-interface AgentHarnessPrinciples {
-  // 1. Async-first: Everything yields, nothing blocks
-  eventLoop: AsyncGenerator<AgentEvent, void, void>;
-  
-  // 2. Dependency injection: No global state
-  deps: QueryDeps;
-  
-  // 3. Fail-safe by default: Explicit opt-in for destructive ops
-  toolSafety: 'readOnly' | 'requiresApproval' | 'destructive';
-  
-  // 4. Observable: Every decision point emits events
-  hooks: HookSystem;
-  
-  // 5. Composable: Agents can fork and orchestrate sub-agents
-  fork: (context: ConversationContext) => Agent;
-}
+// Agent Harness design philosophy
+const DESIGN_PRINCIPLES = {
+  transparency: "All decisions visible to user",
+  composability: "Tools, hooks, agents as building blocks",
+  safety: "Multi-layer permission gates + circuit breakers",
+  streaming: "AsyncGenerator-based reactive architecture",
+  dependency_injection: "QueryDeps container for testability"
+} as const;
 ```
 
-### 2. Event Loop Architecture (Ch02)
+### 2. Technology Stack
 
-The core conversation loop is an **async generator** that yields five event types:
+- **Runtime**: Bun (fast startup, native TypeScript)
+- **UI**: React + Ink (TUI in terminal)
+- **Validation**: Zod v4 (schema-first tool definitions)
+- **Concurrency**: AsyncIterator + Promise.race patterns
+
+## Conversation Loop (Agent's Heartbeat)
+
+### Basic Loop Structure
 
 ```typescript
-/**
- * Main conversation loop - the "heartbeat" of the agent
- */
 async function* conversationLoop(
-  deps: QueryDeps
-): AsyncGenerator<ConversationEvent, void, void> {
-  while (true) {
-    // 1. Get model response
-    const response = await deps.model.generate(deps.context);
-    
-    // 2. Yield thinking event
-    if (response.thinking) {
-      yield { type: 'thinking', content: response.thinking };
+  deps: QueryDeps,
+  initialMessages: Message[]
+): AsyncGenerator<QueryEvent, void, void> {
+  
+  let messages = [...initialMessages];
+  let turnCount = 0;
+  const MAX_TURNS = deps.config.maxTurns ?? 100;
+  
+  while (turnCount < MAX_TURNS) {
+    // 1. Check context budget
+    const budget = calculateTokenBudget(messages, deps.context);
+    if (budget.remaining < deps.config.minTokenReserve) {
+      yield { type: 'context_full', budget };
+      await compressContext(messages, deps);
     }
     
-    // 3. Yield content event
-    if (response.content) {
-      yield { type: 'content', delta: response.content };
-    }
+    // 2. Call LLM with tool schemas
+    const response = await deps.llm.generate({
+      messages,
+      tools: deps.toolRegistry.getSchemas(),
+      systemPrompt: deps.config.systemPrompt
+    });
     
-    // 4. Handle tool calls
-    if (response.toolCalls) {
-      for (const call of response.toolCalls) {
-        yield { type: 'tool_call', tool: call };
-        
-        const result = await executeToolWithPermission(call, deps);
+    yield { type: 'assistant_message', content: response };
+    
+    // 3. Handle tool calls
+    if (response.toolCalls?.length > 0) {
+      const results = await executeToolsWithPermissions(
+        response.toolCalls,
+        deps
+      );
+      
+      for (const result of results) {
         yield { type: 'tool_result', result };
-        
-        deps.context.addToolResult(result);
+        messages.push({ role: 'tool', ...result });
       }
-      continue; // Loop back for next model turn
     }
     
-    // 5. Check termination
-    const termination = checkTermination(response, deps);
-    if (termination) {
-      yield { type: 'done', reason: termination };
+    // 4. Check termination
+    if (response.stopReason === 'end_turn' || !response.toolCalls) {
+      yield { type: 'query_complete', reason: 'natural_stop' };
       break;
     }
+    
+    turnCount++;
+  }
+  
+  if (turnCount >= MAX_TURNS) {
+    yield { type: 'query_complete', reason: 'max_turns_exceeded' };
   }
 }
-
-// 10 termination reasons (from Ch02)
-type TerminationReason =
-  | 'stop'              // Model returned stop token
-  | 'max_turns'         // Hit conversation limit
-  | 'token_budget'      // Exceeded context window
-  | 'user_interrupt'    // Manual cancellation
-  | 'tool_error'        // Unrecoverable tool failure
-  | 'permission_denied' // User rejected critical tool
-  | 'timeout'           // Wall-clock time limit
-  | 'cost_limit'        // API cost exceeded
-  | 'safety_violation'  // Content policy triggered
-  | 'goal_achieved';    // Plan completed
 ```
 
-### 3. Tool System (Ch03)
-
-Tools follow a strict **5-element protocol**:
+### Five Core Yield Events
 
 ```typescript
-/**
- * Tool protocol with safety guarantees
- */
-interface Tool<Input, Output, Params = void> {
-  // 1. Identity
-  name: string;
-  description: string;
+type QueryEvent = 
+  | { type: 'assistant_message'; content: string; thinking?: string }
+  | { type: 'tool_call'; tool: string; input: unknown; approved: boolean }
+  | { type: 'tool_result'; success: boolean; output: unknown }
+  | { type: 'context_full'; budget: TokenBudget }
+  | { type: 'query_complete'; reason: TerminationReason };
+
+type TerminationReason =
+  | 'natural_stop'        // Agent said "done"
+  | 'max_turns_exceeded'  // Hit turn limit
+  | 'user_interrupt'      // Ctrl+C
+  | 'error_threshold'     // Too many tool failures
+  | 'token_exhausted'     // Context cannot compress further
+  | 'permission_denied'   // Critical tool blocked
+  | 'safety_triggered'    // Harmful action detected
+  | 'timeout'             // Wall-clock limit
+  | 'explicit_stop'       // stopQuery() called
+  | 'parent_terminated';  // Sub-agent's parent stopped
+```
+
+## Tool System (Agent's Hands)
+
+### Tool Protocol
+
+```typescript
+interface Tool<Input = unknown, Output = unknown, Params = void> {
+  name: string;                    // e.g., "bash_execute"
+  description: string;             // For LLM tool selection
+  inputSchema: z.ZodType<Input>;   // Zod validation
+  outputSchema: z.ZodType<Output>; // Response shape
   
-  // 2. Contract (Zod schemas)
-  inputSchema: z.ZodSchema<Input>;
-  outputSchema: z.ZodSchema<Output>;
-  
-  // 3. Safety properties
-  readOnly: boolean;           // Can it mutate state?
-  destructive: boolean;        // Is mutation irreversible?
-  concurrencySafe: boolean;    // Safe to run in parallel?
-  
-  // 4. Execution
+  // Execution
   execute: (input: Input, params: Params) => Promise<Output>;
   
-  // 5. Permissions
-  requiresApproval?: (input: Input) => boolean;
-  permissionScope?: string[];
+  // Safety metadata
+  readOnly: boolean;               // No side effects
+  destructive: boolean;            // Can delete/modify data
+  requiresApproval: boolean;       // Force permission gate
+  concurrencySafe: boolean;        // Can run in parallel
+  
+  // Categorization
+  category: ToolCategory;          // file | shell | memory | ...
+  tags?: string[];
 }
 
-/**
- * Fail-safe tool factory (Ch03)
- */
+type ToolCategory =
+  | 'file'      // read_file, write_file, list_directory
+  | 'shell'     // bash_execute, run_command
+  | 'memory'    // store_memory, query_memory
+  | 'web'       // fetch_url, search
+  | 'mcp'       // MCP server tools
+  | 'meta'      // fork_agent, use_skill
+  | 'planning'  // create_plan, update_plan
+  | 'config'    // set_flag, load_skill
+  | 'search'    // grep, find_in_codebase
+  | 'git'       // commit, diff, branch
+  | 'chat'      // ask_user, send_notification
+  | 'system';   // get_env, check_platform
+```
+
+### Fault-Safe Tool Factory
+
+```typescript
 function buildTool<I, O, P = void>(
   spec: ToolSpec<I, O, P>
 ): Tool<I, O, P> {
+  
   return {
     ...spec,
-    execute: async (input, params) => {
-      try {
-        // 1. Validate input
-        const validated = spec.inputSchema.parse(input);
-        
-        // 2. Execute with timeout
-        const result = await withTimeout(
-          spec.execute(validated, params),
-          spec.timeout ?? 30000
-        );
-        
-        // 3. Validate output
-        return spec.outputSchema.parse(result);
-      } catch (error) {
-        // 4. Return structured error (never throw)
-        return {
-          success: false,
-          error: error.message,
-          code: error.code ?? 'TOOL_ERROR'
-        } as O;
-      }
+    
+    // Wrapped executor with safety layers
+    execute: async (input: I, params: P): Promise<O> => {
+      // 1. Input validation
+      const validatedInput = spec.inputSchema.parse(input);
+      
+      // 2. Pre-execution hook
+      await spec.hooks?.beforeExecute?.(validatedInput, params);
+      
+      // 3. Timeout wrapper
+      const timeoutMs = spec.timeout ?? 30_000;
+      const result = await Promise.race([
+        spec.execute(validatedInput, params),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Tool timeout')), timeoutMs)
+        )
+      ]);
+      
+      // 4. Output validation
+      const validatedOutput = spec.outputSchema.parse(result);
+      
+      // 5. Post-execution hook
+      await spec.hooks?.afterExecute?.(validatedOutput);
+      
+      return validatedOutput;
     }
   };
 }
+```
 
-/**
- * Example: File read tool (read-only, safe)
- */
+### Example: File System Tool
+
+```typescript
 const readFileTool = buildTool({
   name: 'read_file',
-  description: 'Read file contents',
-  inputSchema: z.object({
-    path: z.string(),
-    encoding: z.enum(['utf8', 'base64']).default('utf8')
-  }),
-  outputSchema: z.object({
-    content: z.string(),
-    size: z.number()
-  }),
+  description: 'Read contents of a file',
+  category: 'file',
   readOnly: true,
   destructive: false,
   concurrencySafe: true,
+  
+  inputSchema: z.object({
+    path: z.string(),
+    encoding: z.enum(['utf8', 'binary']).default('utf8')
+  }),
+  
+  outputSchema: z.object({
+    content: z.string(),
+    size: z.number(),
+    mtime: z.date()
+  }),
+  
   execute: async ({ path, encoding }) => {
     const content = await fs.readFile(path, encoding);
-    return { content, size: content.length };
-  }
-});
-
-/**
- * Example: Bash execution (destructive, needs approval)
- */
-const bashTool = buildTool({
-  name: 'bash',
-  description: 'Execute shell command',
-  inputSchema: z.object({
-    command: z.string(),
-    cwd: z.string().optional()
-  }),
-  outputSchema: z.object({
-    stdout: z.string(),
-    stderr: z.string(),
-    exitCode: z.number()
-  }),
-  readOnly: false,
-  destructive: true,
-  concurrencySafe: false,
-  requiresApproval: (input) => {
-    // Auto-approve safe commands
-    const safePatterns = [/^ls/, /^pwd/, /^echo/];
-    return !safePatterns.some(p => p.test(input.command));
-  },
-  execute: async ({ command, cwd }) => {
-    const result = await exec(command, { cwd });
-    return result;
+    const stats = await fs.stat(path);
+    
+    return {
+      content,
+      size: stats.size,
+      mtime: stats.mtime
+    };
   }
 });
 ```
 
-### 4. Permission Pipeline (Ch04)
-
-Four-stage pipeline for tool safety:
+### Concurrent Tool Execution
 
 ```typescript
-/**
- * 4-stage permission pipeline
- */
-async function executeToolWithPermission<I, O>(
-  call: ToolCall<I>,
+async function executeToolsWithConcurrency(
+  toolCalls: ToolCall[],
   deps: QueryDeps
-): Promise<ToolResult<O>> {
-  const tool = deps.toolRegistry.get(call.name);
+): Promise<ToolResult[]> {
   
-  // STAGE 1: Declaration check
-  if (!tool) {
-    return { error: 'Tool not found', code: 'UNKNOWN_TOOL' };
+  // Partition by concurrency safety
+  const partitions = partitionTools(toolCalls, deps.toolRegistry);
+  
+  const results: ToolResult[] = [];
+  
+  for (const partition of partitions) {
+    // Safe tools run in parallel
+    if (partition.concurrencySafe) {
+      const partitionResults = await Promise.all(
+        partition.calls.map(call => 
+          executeSingleTool(call, deps)
+        )
+      );
+      results.push(...partitionResults);
+    } 
+    // Unsafe tools run sequentially
+    else {
+      for (const call of partition.calls) {
+        const result = await executeSingleTool(call, deps);
+        results.push(result);
+      }
+    }
   }
   
-  // STAGE 2: Validation
-  const validation = tool.inputSchema.safeParse(call.input);
-  if (!validation.success) {
-    return { 
-      error: 'Invalid input', 
-      code: 'VALIDATION_ERROR',
-      details: validation.error 
+  return results;
+}
+
+function partitionTools(
+  toolCalls: ToolCall[],
+  registry: ToolRegistry
+): ToolPartition[] {
+  const partitions: ToolPartition[] = [];
+  let currentPartition: ToolPartition | null = null;
+  
+  for (const call of toolCalls) {
+    const tool = registry.get(call.name);
+    
+    // Start new partition if concurrency mode changes
+    if (!currentPartition || 
+        currentPartition.concurrencySafe !== tool.concurrencySafe) {
+      currentPartition = {
+        concurrencySafe: tool.concurrencySafe,
+        calls: []
+      };
+      partitions.push(currentPartition);
+    }
+    
+    currentPartition.calls.push(call);
+  }
+  
+  return partitions;
+}
+```
+
+## Permission Pipeline (Agent's Guardrails)
+
+### 4-Stage Authorization Flow
+
+```typescript
+async function checkToolPermission(
+  toolCall: ToolCall,
+  deps: QueryDeps
+): Promise<PermissionResult> {
+  
+  // Stage 1: Policy Check (instant)
+  const policyResult = await deps.permissionManager.checkPolicy(toolCall);
+  if (policyResult === 'ALWAYS_DENY') {
+    return { approved: false, reason: 'policy_block' };
+  }
+  if (policyResult === 'ALWAYS_ALLOW') {
+    return { approved: true, reason: 'policy_auto_approve' };
+  }
+  
+  // Stage 2: Rule Matching (< 1ms)
+  const ruleMatch = deps.permissionManager.matchRules(toolCall);
+  if (ruleMatch) {
+    return {
+      approved: ruleMatch.action === 'allow',
+      reason: 'rule_match',
+      rule: ruleMatch.pattern
     };
   }
   
-  // STAGE 3: Permission check
-  const needsApproval = 
-    tool.destructive || 
-    tool.requiresApproval?.(call.input);
-    
-  if (needsApproval) {
-    const approved = await deps.permissionManager.requestApproval({
-      tool: tool.name,
-      input: call.input,
-      reason: classifyIntent(call),
-      timeout: 120000 // 2 minutes
-    });
-    
-    if (!approved) {
-      return { error: 'Permission denied', code: 'DENIED' };
-    }
-  }
-  
-  // STAGE 4: Execution + verification
-  const result = await tool.execute(validation.data, deps.params);
-  
-  // Post-execution verification (if configured)
-  if (tool.verify) {
-    const verified = await tool.verify(result, call.input);
-    if (!verified.success) {
-      await tool.rollback?.(result);
-      return { error: verified.reason, code: 'VERIFICATION_FAILED' };
-    }
-  }
-  
-  return result;
-}
-
-/**
- * 5 permission modes (Ch04)
- */
-type PermissionMode =
-  | 'auto'        // Auto-approve safe tools
-  | 'prompt'      // Prompt for destructive tools
-  | 'strict'      // Prompt for all tools
-  | 'deny'        // Deny all destructive tools
-  | 'passthrough'; // No checks (dev mode only)
-
-/**
- * Speculative classifier (Ch04)
- * Runs in parallel with user approval for faster UX
- */
-async function classifyIntent(
-  call: ToolCall,
-  timeout = 2000
-): Promise<IntentClassification> {
-  return Promise.race([
-    // Fast heuristic classifier
-    quickClassify(call),
-    
-    // LLM-based classifier (may be slow)
-    llmClassify(call),
-    
-    // Timeout fallback
-    delay(timeout).then(() => ({ confidence: 'low', safe: false }))
+  // Stage 3: Speculative Classifier (< 2s)
+  const classification = await Promise.race([
+    deps.classifier.predictSafety(toolCall),
+    new Promise<'unknown'>((resolve) => 
+      setTimeout(() => resolve('unknown'), 2000)
+    )
   ]);
-}
-```
-
-### 5. Context Management (Ch07)
-
-Token budget management with 4-level compression:
-
-```typescript
-/**
- * Effective context window formula
- */
-interface ContextBudget {
-  total: number;           // Model's max context (200k for Claude 3.5)
-  reserved: {
-    systemPrompt: number;  // ~2k tokens
-    tools: number;         // ~500 tokens per tool
-    response: number;      // ~4k tokens reserved for output
-  };
-  effective: number;       // total - sum(reserved)
-}
-
-/**
- * 4-level progressive compression (Ch07)
- */
-class ContextManager {
-  private budget: ContextBudget;
   
-  async compress(context: Message[]): Promise<Message[]> {
-    const usage = this.estimateTokens(context);
-    
-    // Level 1: Snip - Remove old tool results
-    if (usage > this.budget.effective * 0.8) {
-      context = this.snipOldToolResults(context);
-    }
-    
-    // Level 2: MicroCompact - Collapse repeated patterns
-    if (usage > this.budget.effective * 0.9) {
-      context = this.microCompact(context);
-    }
-    
-    // Level 3: Collapse - Summarize old conversations
-    if (usage > this.budget.effective * 0.95) {
-      context = await this.collapseOldMessages(context);
-    }
-    
-    // Level 4: AutoCompact - Emergency fallback
-    if (usage > this.budget.effective) {
-      context = await this.autoCompact(context);
-    }
-    
-    return context;
+  if (classification === 'safe') {
+    return { approved: true, reason: 'classifier_safe' };
+  }
+  if (classification === 'harmful') {
+    return { approved: false, reason: 'classifier_block' };
   }
   
-  /**
-   * Circuit breaker pattern (Ch07)
-   * Prevents infinite compression loops
-   */
-  private autoCompact(context: Message[]): Message[] {
-    const attempts = 0;
-    const maxAttempts = 3;
-    
-    while (this.estimateTokens(context) > this.budget.effective) {
-      if (attempts >= maxAttempts) {
-        // Circuit breaker triggered
-        throw new Error('CONTEXT_OVERFLOW');
-      }
-      
-      // Remove least important 20% of messages
-      context = this.removeByImportance(context, 0.2);
-      attempts++;
-    }
-    
-    return context;
-  }
-}
-```
-
-### 6. Memory System (Ch06)
-
-4 types of closed-form memory:
-
-```typescript
-/**
- * Memory types (Ch06)
- */
-interface MemorySystem {
-  // 1. Conversation memory (session-scoped)
-  conversation: {
-    messages: Message[];
-    toolResults: ToolResult[];
-    userPreferences: Record<string, unknown>;
-  };
+  // Stage 4: User Prompt (blocking)
+  const userDecision = await deps.ui.promptUser({
+    tool: toolCall.name,
+    input: toolCall.input,
+    context: deps.context.recent()
+  });
   
-  // 2. Project memory (workspace-scoped)
-  project: {
-    structure: FileTree;
-    dependencies: PackageJson;
-    conventions: CodingStyle;
-  };
-  
-  // 3. User memory (global)
-  user: {
-    preferences: UserConfig;
-    learnedPatterns: Pattern[];
-  };
-  
-  // 4. Skill memory (external knowledge)
-  skills: {
-    installed: Skill[];
-    index: SkillIndex;
-  };
-}
-
-/**
- * Memory persistence principle (Ch06):
- * "Only save information that cannot be derived"
- */
-async function shouldPersist(info: Information): Promise<boolean> {
-  // Don't save: file contents (can be re-read)
-  if (info.type === 'file_content') return false;
-  
-  // Don't save: computed values (can be re-computed)
-  if (info.type === 'derived_value') return false;
-  
-  // DO save: user preferences (can't be inferred reliably)
-  if (info.type === 'user_preference') return true;
-  
-  // DO save: learned patterns (expensive to re-learn)
-  if (info.type === 'pattern' && info.confidence > 0.8) return true;
-  
-  return false;
-}
-
-/**
- * Fork-based memory inheritance (Ch09)
- */
-class Agent {
-  async fork(taskDescription: string): Promise<Agent> {
-    const childAgent = new Agent({
-      // Byte-level context copy
-      context: this.context.clone(),
-      
-      // Shared memory (copy-on-write)
-      memory: this.memory.createSnapshot(),
-      
-      // Isolated tool permissions
-      permissions: this.permissions.createChild(),
-      
-      // Custom system prompt
-      systemPrompt: `You are a sub-agent working on: ${taskDescription}
-      
-      Parent context:
-      ${this.context.summarize()}
-      
-      When done, return control to parent.`
+  // Store decision as rule for future
+  if (userDecision.remember) {
+    deps.permissionManager.addRule({
+      pattern: userDecision.pattern,
+      action: userDecision.approved ? 'allow' : 'deny'
     });
-    
-    return childAgent;
   }
+  
+  return {
+    approved: userDecision.approved,
+    reason: 'user_decision'
+  };
 }
 ```
 
-### 7. Hook System (Ch08)
-
-Lifecycle extensibility without modifying core:
+### Permission Modes Spectrum
 
 ```typescript
-/**
- * Hook system (Ch08)
- */
-interface Hook {
-  name: string;
-  type: 'before' | 'after' | 'around' | 'replace' | 'stream';
-  event: HookEvent;
-  priority: number; // 0-100, higher = earlier
-  execute: (data: HookData) => Promise<HookResult>;
-}
+type PermissionMode =
+  | 'always_ask'      // Every tool requires approval
+  | 'ask_dangerous'   // Only destructive tools prompt
+  | 'auto_safe'       // Auto-approve readOnly tools
+  | 'trust_classifier'// Use ML classifier, rarely prompt
+  | 'autonomous';     // No prompts (production agents)
 
-/**
- * 26 lifecycle events (subset shown)
- */
-type HookEvent =
-  | 'query:start'
-  | 'query:end'
-  | 'tool:before_execute'
-  | 'tool:after_execute'
-  | 'context:before_compress'
-  | 'context:after_compress'
-  | 'permission:request'
-  | 'permission:granted'
-  | 'memory:save'
-  | 'agent:fork';
-
-/**
- * Example: Custom approval hook
- */
-const customApprovalHook: Hook = {
-  name: 'custom-approval',
-  type: 'around',
-  event: 'permission:request',
-  priority: 50,
-  execute: async (data) => {
-    const { tool, input } = data;
-    
-    // Custom logic: auto-approve npm installs for known packages
-    if (tool === 'bash' && input.command.startsWith('npm install')) {
-      const pkg = input.command.split(' ')[2];
-      if (await isKnownPackage(pkg)) {
-        return { approved: true, reason: 'Known package' };
-      }
-    }
-    
-    // Fall through to default approval flow
-    return { continue: true };
+const permissionConfig = {
+  mode: 'ask_dangerous' as PermissionMode,
+  
+  // Custom rules (Bash-style patterns)
+  rules: [
+    { pattern: 'bash_execute rm -rf *', action: 'deny' },
+    { pattern: 'read_file ~/.ssh/*', action: 'allow' },
+    { pattern: 'write_file *.test.ts', action: 'allow' }
+  ],
+  
+  // Override per tool
+  toolOverrides: {
+    'bash_execute': 'always_ask',
+    'read_file': 'auto_safe'
   }
 };
+```
 
-/**
- * Hook registration
- */
-class HookSystem {
-  private hooks = new Map<HookEvent, Hook[]>();
+## Context Management (Agent's Working Memory)
+
+### Token Budget Calculation
+
+```typescript
+interface TokenBudget {
+  total: number;           // Model context window (e.g., 200k)
+  reserved: number;        // System prompt + tool schemas
+  used: number;            // Current message history
+  remaining: number;       // Available for new turns
+  compressionThreshold: number; // Trigger compression at %
+}
+
+function calculateBudget(
+  messages: Message[],
+  config: ContextConfig
+): TokenBudget {
+  const total = config.modelContextWindow;
+  const reserved = 
+    estimateTokens(config.systemPrompt) +
+    estimateTokens(JSON.stringify(config.toolSchemas)) +
+    config.safetyMargin;
   
-  register(hook: Hook): void {
-    const existing = this.hooks.get(hook.event) ?? [];
-    existing.push(hook);
-    // Sort by priority (descending)
-    existing.sort((a, b) => b.priority - a.priority);
-    this.hooks.set(hook.event, existing);
+  const used = messages.reduce(
+    (sum, msg) => sum + estimateTokens(msg.content),
+    0
+  );
+  
+  const remaining = total - reserved - used;
+  const compressionThreshold = total * config.compressionTrigger;
+  
+  return {
+    total,
+    reserved,
+    used,
+    remaining,
+    compressionThreshold
+  };
+}
+
+function estimateTokens(text: string): number {
+  // Rough approximation: 1 token ≈ 4 characters
+  return Math.ceil(text.length / 4);
+}
+```
+
+### 4-Level Progressive Compression
+
+```typescript
+async function compressContext(
+  messages: Message[],
+  deps: QueryDeps
+): Promise<Message[]> {
+  
+  let compressed = [...messages];
+  const budget = calculateBudget(compressed, deps.config);
+  
+  // Level 1: Snip - Remove middle chunks of long messages
+  if (budget.remaining < budget.total * 0.2) {
+    compressed = await snipLongMessages(compressed, {
+      maxMessageLength: 2000,
+      keepFirstChars: 500,
+      keepLastChars: 500
+    });
   }
   
-  async trigger(event: HookEvent, data: HookData): Promise<HookResult> {
-    const hooks = this.hooks.get(event) ?? [];
+  // Level 2: MicroCompact - Summarize old messages
+  if (budget.remaining < budget.total * 0.15) {
+    compressed = await microCompact(compressed, {
+      targetReduction: 0.3,
+      preserveRecent: 10,
+      summaryModel: 'fast-summary-model'
+    });
+  }
+  
+  // Level 3: Collapse - Merge sequential tool results
+  if (budget.remaining < budget.total * 0.1) {
+    compressed = collapseToolResults(compressed, {
+      maxSequentialTools: 3,
+      keepSummary: true
+    });
+  }
+  
+  // Level 4: AutoCompact - Aggressive LLM summarization
+  if (budget.remaining < budget.total * 0.05) {
+    compressed = await autoCompact(compressed, {
+      targetTokens: budget.total * 0.3,
+      systemPrompt: deps.config.compactionPrompt
+    });
+  }
+  
+  return compressed;
+}
+
+function snipLongMessages(
+  messages: Message[],
+  opts: SnipOptions
+): Message[] {
+  return messages.map(msg => {
+    if (msg.content.length <= opts.maxMessageLength) {
+      return msg;
+    }
     
-    for (const hook of hooks) {
-      const result = await hook.execute(data);
-      
-      // If hook says to stop, short-circuit
-      if (result.stop) return result;
-      
-      // If hook modified data, pass it forward
-      if (result.data) {
-        data = { ...data, ...result.data };
+    const first = msg.content.slice(0, opts.keepFirstChars);
+    const last = msg.content.slice(-opts.keepLastChars);
+    const omitted = msg.content.length - first.length - last.length;
+    
+    return {
+      ...msg,
+      content: `${first}\n\n[... ${omitted} chars omitted ...]\n\n${last}`
+    };
+  });
+}
+```
+
+### Circuit Breaker Pattern
+
+```typescript
+class ContextCircuitBreaker {
+  private state: 'closed' | 'open' | 'half_open' = 'closed';
+  private failureCount = 0;
+  private lastFailureTime = 0;
+  
+  constructor(
+    private threshold = 3,
+    private resetTimeout = 60_000
+  ) {}
+  
+  async executeWithBreaker<T>(
+    operation: () => Promise<T>
+  ): Promise<T> {
+    
+    // Open state: reject fast
+    if (this.state === 'open') {
+      if (Date.now() - this.lastFailureTime > this.resetTimeout) {
+        this.state = 'half_open';
+      } else {
+        throw new Error('Circuit breaker OPEN: context system unavailable');
       }
     }
-    
-    return { continue: true, data };
-  }
-}
-```
-
-### 8. Sub-Agent Patterns (Ch09-10)
-
-Coordinator-Worker orchestration:
-
-```typescript
-/**
- * Coordinator pattern (Ch10)
- * "Plan but don't execute"
- */
-class CoordinatorAgent {
-  private workers = new Map<string, Agent>();
-  
-  async orchestrate(task: Task): Promise<Result> {
-    // 1. Decompose into subtasks
-    const plan = await this.decompose(task);
-    
-    // 2. Assign to workers
-    for (const subtask of plan.subtasks) {
-      const worker = await this.getOrCreateWorker(subtask.capability);
-      
-      // Fork with isolated context
-      const workerAgent = await worker.fork(subtask.description);
-      
-      this.workers.set(subtask.id, workerAgent);
-    }
-    
-    // 3. Monitor progress (don't execute tools yourself)
-    const results = await Promise.all(
-      Array.from(this.workers.entries()).map(([id, agent]) =>
-        agent.run().then(result => ({ id, result }))
-      )
-    );
-    
-    // 4. Synthesize results
-    return this.synthesize(results);
-  }
-  
-  /**
-   * Coordinator constraints (Ch10)
-   */
-  private enforceConstraints(tool: Tool): boolean {
-    // Coordinators can only use planning/communication tools
-    const allowedTools = [
-      'create_subtask',
-      'assign_to_worker',
-      'wait_for_worker',
-      'get_worker_status'
-    ];
-    
-    return allowedTools.includes(tool.name);
-  }
-}
-
-/**
- * 4 addressing modes (Ch10)
- */
-type WorkerAddress =
-  | { type: 'id'; value: string }                    // By ID
-  | { type: 'capability'; value: string[] }          // By skill tags
-  | { type: 'context'; value: ConversationContext }  // By context match
-  | { type: 'cost'; value: number };                 // By cost budget
-```
-
-### 9. MCP Integration (Ch12)
-
-Bridge pattern for external protocols:
-
-```typescript
-/**
- * MCP transport types (Ch12)
- */
-type MCPTransport =
-  | { type: 'stdio'; command: string; args: string[] }
-  | { type: 'sse'; url: string }
-  | { type: 'websocket'; url: string }
-  | { type: 'unix'; path: string }
-  | { type: 'tcp'; host: string; port: number }
-  | { type: 'http'; endpoint: string }
-  | { type: 'grpc'; target: string }
-  | { type: 'custom'; handler: CustomTransport };
-
-/**
- * MCP server connection lifecycle
- */
-class MCPServer {
-  private state: 'disconnected' | 'connecting' | 'connected' | 'error' | 'reconnecting';
-  
-  async connect(config: MCPConfig): Promise<void> {
-    this.state = 'connecting';
     
     try {
-      const transport = this.createTransport(config.transport);
-      await transport.connect();
+      const result = await operation();
       
-      // Initialize protocol
-      const initResponse = await transport.send({
-        jsonrpc: '2.0',
-        method: 'initialize',
-        params: {
-          protocolVersion: '2024-11-05',
-          capabilities: {
-            tools: {},
-            resources: {},
-            prompts: {}
-          },
-          clientInfo: {
-            name: 'claude-code',
-            version: '1.0.0'
-          }
-        }
-      });
+      // Success: reset
+      if (this.state === 'half_open') {
+        this.state = 'closed';
+        this.failureCount = 0;
+      }
       
-      this.state = 'connected';
-      this.registerTools(initResponse.result.capabilities.tools);
+      return result;
+      
     } catch (error) {
-      this.state = 'error';
-      await this.reconnect();
-    }
-  }
-  
-  /**
-   * 3-segment tool naming (Ch12)
-   */
-  private registerTools(tools: MCPTool[]): void {
-    for (const tool of tools) {
-      const name = `mcp:${this.serverName}:${tool.name}`;
+      this.failureCount++;
+      this.lastFailureTime = Date.now();
       
-      this.toolRegistry.register({
-        name,
-        description: tool.description,
-        inputSchema: z.object(tool.inputSchema),
-        execute: async (input) => {
-          return this.transport.send({
-            method: 'tools/call',
-            params: { name: tool.name, arguments: input }
-          });
-        }
-      });
-    }
-  }
-}
-```
-
-## Configuration Hierarchy (Ch05)
-
-6-layer configuration priority chain:
-
-```typescript
-/**
- * Configuration layers (highest to lowest priority)
- */
-interface ConfigHierarchy {
-  // 1. Runtime flags (CLI args)
-  runtime: {
-    '--model': string;
-    '--temperature': number;
-  };
-  
-  // 2. Environment variables
-  env: {
-    ANTHROPIC_API_KEY: string;
-    CLAUDE_CODE_CONFIG_PATH: string;
-  };
-  
-  // 3. Workspace .claude/config.json
-  workspace: {
-    model: string;
-    tools: ToolConfig[];
-  };
-  
-  // 4. User ~/.config/claude-code/config.json
-  user: {
-    defaultModel: string;
-    keybindings: Record<string, string>;
-  };
-  
-  // 5. Project package.json (claudeCode field)
-  project: {
-    skills: string[];
-    mcpServers: MCPConfig[];
-  };
-  
-  // 6. Built-in defaults
-  defaults: {
-    model: 'claude-3-5-sonnet-20241022';
-    temperature: 0.7;
-  };
-}
-
-/**
- * Config merge strategy (Ch05)
- */
-function mergeConfigs(...configs: Partial<Config>[]): Config {
-  return configs.reduce((merged, config) => {
-    // Arrays: concatenate + dedupe
-    if (Array.isArray(config)) {
-      return [...new Set([...merged, ...config])];
-    }
-    
-    // Objects: deep merge
-    if (typeof config === 'object') {
-      return deepMerge(merged, config);
-    }
-    
-    // Primitives: last one wins
-    return config;
-  }, {} as Config);
-}
-```
-
-## Performance Patterns (Ch13)
-
-```typescript
-/**
- * Startup optimization (Ch13)
- * Before: 160ms, After: 65ms (-59%)
- */
-class QueryEngine {
-  // Lazy-load heavy dependencies
-  private _toolRegistry?: ToolRegistry;
-  
-  get toolRegistry(): ToolRegistry {
-    if (!this._toolRegistry) {
-      this._toolRegistry = new ToolRegistry();
-      this.loadCoreTools(); // Only load when first accessed
-    }
-    return this._toolRegistry;
-  }
-  
-  /**
-   * Parallel initialization
-   */
-  async initialize(): Promise<void> {
-    await Promise.all([
-      this.loadConfig(),      // ~20ms
-      this.connectMCP(),      // ~30ms
-      this.initializeMemory() // ~15ms
-    ]);
-    // Total: max(20, 30, 15) = 30ms (vs 65ms sequential)
-  }
-  
-  /**
-   * Concurrent tool execution with partitioning
-   */
-  async executeTools(calls: ToolCall[]): Promise<ToolResult[]> {
-    // Partition by concurrency safety
-    const { safe, unsafe } = partition(calls, c => 
-      this.toolRegistry.get(c.name).concurrencySafe
-    );
-    
-    // Execute safe tools in parallel
-    const safeResults = await Promise.all(
-      safe.map(call => this.executeTool(call))
-    );
-    
-    // Execute unsafe tools sequentially
-    const unsafeResults = [];
-    for (const call of unsafe) {
-      unsafeResults.push(await this.executeTool(call));
-    }
-    
-    return [...safeResults, ...unsafeResults];
-  }
-}
-```
-
-## Building Your Own Harness (Ch15)
-
-6-step implementation roadmap:
-
-```typescript
-/**
- * Step 1: Core event loop
- */
-async function* createAgentLoop(deps: QueryDeps) {
-  while (true) {
-    const response = await deps.model.generate(deps.context);
-    yield* processResponse(response, deps);
-    
-    if (shouldTerminate(response, deps)) break;
-  }
-}
-
-/**
- * Step 2: Dependency injection
- */
-interface QueryDeps {
-  model: ModelClient;
-  context: ContextManager;
-  tools: ToolRegistry;
-  permissions: PermissionManager;
-  memory: MemorySystem;
-  hooks: HookSystem;
-  config: Config;
-}
-
-/**
- * Step 3: Tool registry
- */
-class ToolRegistry {
-  private tools = new Map<string, Tool>();
-  
-  register(tool: Tool): void {
-    this.tools.set(tool.name, tool);
-  }
-  
-  async execute(call: ToolCall, deps: QueryDeps): Promise<ToolResult> {
-    const tool = this.tools.get(call.name);
-    if (!tool) throw new Error('Unknown tool');
-    
-    // Run through permission pipeline
-    return executeToolWithPermission(tool, call, deps);
-  }
-}
-
-/**
- * Step 4: Observable events
- */
-class EventBus {
-  private listeners = new Map<string, Function[]>();
-  
-  emit(event: string, data: unknown): void {
-    const handlers = this.listeners.get(event) ?? [];
-    handlers.forEach(fn => fn(data));
-  }
-  
-  on(event: string, handler: Function): void {
-    const existing = this.listeners.get(event) ?? [];
-    this.listeners.set(event, [...existing, handler]);
-  }
-}
-
-/**
- * Step 5: Circular dependency resolution
- */
-class DependencyContainer {
-  private instances = new Map<string, unknown>();
-  private factories = new Map<string, () => unknown>();
-  
-  register<T>(name: string, factory: () => T): void {
-    this.factories.set(name, factory);
-  }
-  
-  resolve<T>(name: string): T {
-    // Return cached instance if exists
-    if (this.instances.has(name)) {
-      return this.instances.get(name) as T;
-    }
-    
-    // Create proxy to break circular deps
-    const proxy = new Proxy({}, {
-      get: (_, prop) => {
-        const instance = this.instances.get(name);
-        return instance?.[prop];
-      }
-    });
-    
-    this.instances.set(name, proxy);
-    
-    // Execute factory
-    const factory = this.factories.get(name);
-    const instance = factory();
-    
-    // Replace proxy with real instance
-    this.instances.set(name, instance);
-    
-    return instance as T;
-  }
-}
-
-/**
- * Step 6: Full agent implementation
- */
-class Agent {
-  constructor(private deps: QueryDeps) {}
-  
-  async run(userMessage: string): Promise<string> {
-    // Add user message to context
-    this.deps.context.add({ role: 'user', content: userMessage });
-    
-    // Start conversation loop
-    const loop = createAgentLoop(this.deps);
-    
-    let finalResponse = '';
-    
-    for await (const event of loop) {
-      // Emit observable events
-      this.deps.hooks.trigger(`query:${event.type}`, event);
-      
-      if (event.type === 'content') {
-        finalResponse += event.delta;
+      if (this.failureCount >= this.threshold) {
+        this.state = 'open';
       }
       
-      if (event.type === 'done') {
-        break;
-      }
+      throw error;
     }
-    
-    return finalResponse;
   }
 }
-```
 
-## Common Patterns
+// Usage in context manager
+const breaker = new ContextCircuitBreaker();
 
-### Pattern 1: Fail-Safe Defaults
-
-```typescript
-/**
- * Always default to safe mode
- */
-const tool = buildTool({
-  name: 'write_file',
-  readOnly: false,         // Explicit: this mutates
-  destructive: true,       // Explicit: mutation is irreversible
-  requiresApproval: () => true, // Default: always ask
-  execute: async (input) => {
-    // Implementation
-  }
+await breaker.executeWithBreaker(async () => {
+  await compressContext(messages, deps);
 });
 ```
 
-### Pattern 2: Progressive Enhancement
+## Memory System (Agent's Long-Term Memory)
+
+### 4 Memory Types
 
 ```typescript
-/**
- * Start simple, add capabilities incrementally
- */
-class Agent {
-  private capabilities = new Set<string>();
+type Memory =
+  | UserPreferenceMemory   // "User prefers tabs over spaces"
+  | TaskContextMemory      // "Working on auth refactor"
+  | WorldKnowledgeMemory   // "This repo uses Bun"
+  | InteractionHistoryMemory; // "Failed bash_execute 3 times"
+
+interface MemoryEntry {
+  id: string;
+  type: Memory['type'];
+  content: string;
+  importance: 1 | 2 | 3 | 4 | 5; // 5 = critical
+  created: Date;
+  lastAccessed: Date;
+  accessCount: number;
+  tags: string[];
+  source: 'user' | 'agent' | 'system';
+}
+
+class MemoryManager {
+  private memories = new Map<string, MemoryEntry>();
   
-  enableCapability(name: string): void {
-    this.capabilities.add(name);
+  async store(memory: Omit<MemoryEntry, 'id' | 'created'>): Promise<string> {
+    // Only store non-derivable information
+    if (await this.isDerivable(memory.content)) {
+      return 'skipped:derivable';
+    }
+    
+    const id = crypto.randomUUID();
+    const entry: MemoryEntry = {
+      ...memory,
+      id,
+      created: new Date(),
+      lastAccessed: new Date(),
+      accessCount: 0
+    };
+    
+    this.memories.set(id, entry);
+    await this.persistToFile(entry);
+    
+    return id;
   }
   
-  async run(message: string): Promise<string> {
-    // Core loop works without any capabilities
-    const loop = this.createLoop();
+  async query(query: string, limit = 5): Promise<MemoryEntry[]> {
+    // Simple vector search (production uses embeddings)
+    const scored = Array.from(this.memories.values())
+      .map(mem => ({
+        memory: mem,
+        score: this.relevanceScore(query, mem)
+      }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit);
     
-    // Add tools if enabled
-    if (this.capabilities.has('tools')) {
-      loop.use(toolMiddleware);
+    // Update access metadata
+    for (const { memory } of scored) {
+      memory.lastAccessed = new Date();
+      memory.accessCount++;
     }
     
-    // Add memory if enabled
-    if (this.capabilities.has('memory')) {
-      loop.use(memoryMiddleware);
-    }
+    return scored.map(s => s.memory);
+  }
+  
+  private async isDerivable(content: string): Promise<boolean> {
+    // Don't store: file contents, public API docs, timestamps
+    const derivablePatterns = [
+      /^File.*contains:/,
+      /^The documentation says/,
+      /^Current time is/
+    ];
     
-    return loop.run(message);
+    return derivablePatterns.some(pattern => pattern.test(content));
+  }
+  
+  private relevanceScore(query: string, memory: MemoryEntry): number {
+    const textSimilarity = this.cosineSimilarity(query, memory.content);
+    const importanceBoost = memory.importance / 5;
+    const recencyBoost = this.recencyScore(memory.lastAccessed);
+    
+    return textSimilarity * 0.6 + importanceBoost * 0.3 + recencyBoost * 0.1;
   }
 }
 ```
 
-### Pattern 3: Event Sourcing for Debugging
+### MEMORY.md Index Pattern
+
+```markdown
+<!-- MEMORY.md - Auto-generated memory index -->
+
+# Agent Memory Index
+
+## User Preferences (5 entries)
+- Uses TypeScript strict mode [importance: 4]
+- Prefers functional over OOP [importance: 3]
+- Always wants tests for new features [importance: 5]
+
+## Task Context (3 entries)
+- Refactoring auth system to use JWT [importance: 5, active]
+- Planning migration to Bun runtime [importance: 4]
+
+## World Knowledge (12 entries)
+- This codebase: Bun + React + Zod architecture [importance: 4]
+- Database: PostgreSQL 15 with Drizzle ORM [importance: 3]
+
+## Interaction History (recent 20)
+- bash_execute failed 3x due to missing env vars [importance: 2]
+- Successfully created 15 test files [importance: 1]
+```
+
+### Fork Memory Inheritance
 
 ```typescript
-/**
- * Log every decision as a replayable event
- */
-class DebugLogger {
-  private events: AgentEvent[] = [];
+async function forkAgentWithMemory(
+  parentAgent: Agent,
+  task: string
+): Promise<Agent> {
   
-  log(event: AgentEvent
+  const childAgent = await createAgent({
+    systemPrompt: `Subtask: ${task}\n\nParent context: You are a forked agent.`,
+  });
+  
+  // Inherit parent's memory
+  const inheritedMemories = parentAgent.memory.query('', Infinity)
+    .filter(mem => 
+      // Only inherit high-importance and task-relevant
+      mem.importance >= 3 || mem.type === 'task_context'
+    );
+  
+  for (const mem of inheritedMemories) {
+    await childAgent.memory.store({
+      ...mem,
+      source: 'parent_fork',
+      tags: [...mem.tags, 'inherited']
+    });
+  }
+  
+  // Child's new memories merge back to parent on completion
+  childAgent.onComplete(async () => {
+    const childMemories = childAgent.memory.query('', Infinity)
+      .filter(mem => mem.source === 'agent'); // Only agent-generated
+    
+    for (const mem of childMemories) {
+      await parentAgent.memory.store(mem);
+    }
+  });
+  
+  return childAgent;
+}
+```
+
+## Hook System (Agent's Lifecycle Extensions)
+
+### 5 Hook Types
+
+```typescript
+type Hook =
+  | BeforeToolHook      // Intercept before tool execution
+  | AfterToolHook       // Post-process tool results
+  | BeforeMessageHook   // Modify messages before LLM
+  | AfterMessageHook    // Process LLM responses
+  | ContextUpdateHook;  // React to context changes
+
+interface HookRegistration {
+  type: Hook['type'];
+  priority: number;     // 1-1000, higher runs first
+  handler: HookHandler;
+  enabled: boolean;
+  conditions?: HookCondition[];
+}
+
+type HookHandler = (
+  event: HookEvent,
+  context: HookContext
+) => Promise<HookResult>;
+
+type HookResult = 
+  | { action: 'continue' }
+  | { action: 'modify'; data: unknown }
+  | { action: 'block'; reason: string };
+```
+
+### Example: Logging Hook
+
+```typescript
+const loggingHook: HookRegistration = {
+  type: 'after_tool',
+  priority: 100,
+  enabled: true,
+  
+  handler: async (event, context) => {
+    const { tool, input, output, duration } = event;
+    
+    await fs.appendFile('.claude/tool-audit.log', JSON.stringify({
+      timestamp: new Date().toISOString(),
+      tool: tool.name,
+      input,
+      output,
+      duration,
+      success: !output.error,
+      user: context.user
+    }) + '\n');
+    
+    return { action: 'continue' };
+  }
+};
+
+deps.hooks.register(loggingHook);
+```
+
+### Example: Safety Hook
+
+```typescript
+const sanitizeSecretsHook: HookRegistration = {
+  type: 'before_message',
+  priority: 900, // High priority
+  enabled: true,
+  
+  conditions: [{
+    field: 'message.role',
+    operator: 'equals',
+    value: 'assistant'
+  }],
+  
+  handler: async (event, context) => {
+    const { message } = event;
+    
+    // Redact secrets before sending to LLM
+    const secretPatterns = [
+      /sk-[a-zA-Z0-9]{48}/g,         // OpenAI keys
+      /ghp_[a-zA-Z0-9]{36}/g,        // GitHub tokens
+      /Bearer [a-zA-Z0-9_-]+/g       // Bearer tokens
+    ];
+    
+    let sanitized = message.content;
+    for (const pattern of secretPatterns) {
+      sanitized = sanitized.replace(pattern, '[REDACTED]');
+    }
+    
+    if (sanitized !== message.content) {
+      return {
+        action: 'modify',
+        data: { ...message, content: sanitized }
+      };
+    }
+    
+    return { action: 'continue' };
+  }
+};
+```
+
+## Sub-Agent & Fork Patterns
+
+### Fork with Context Inheritance
+
+```typescript
+async function forkAgent(
+  parentDeps: QueryDeps,
+  task: string,
+  options: ForkOptions = {}
+): Promise<Agent> {
+  
+  // 1. Clone context (byte-level copy)
+  const childContext = {
+    messages: [...parentDeps.context.messages],
+    budget: { ...parentDeps.context.budget },
+    metadata: { ...parentDeps.context.metadata }
+  };
+  
+  // 2. Inherit tools (unless overridden)
+  const childTools = options.tools ?? parentDeps.toolRegistry.clone();
+  
+  // 3. Inherit memory (filtered by importance)
+  const childMemory = await parentDeps.memory.fork({
+    importanceThreshold: options.memoryImportanceThreshold ?? 3
+  });
+  
+  // 4. Create child deps
+  const childDeps: QueryDeps = {
+    ...parentDeps,
+    context: childContext,
+    toolRegistry: childTools,
+    memory: childMemory,
+    config: {
+      ...parentDeps.config,
+      systemPrompt: `${parentDeps.config.systemPrompt}\n\n---\n\nSubtask: ${task}`,
+      maxTurns: options.maxTurns ?? 20
+    }
+  };
+  
+  // 5. Start child conversation loop
+  const childAgent = conversationLoop(
+    childDeps,
+    childContext.messages
+  );
+  
+  // 6. Setup parent-child communication
+  const messageBridge = createParentChildBridge(parentDeps, childDeps);
+  
+  return {
+    generator: childAgent,
+    send: (msg: string) => messageBridge.sendToChild(msg),
+    terminate: () => messageBridge.terminateChild(),
+    waitForCompletion: () => messageBridge.waitForChild()
+  };
+}
+
+// Prevent infinite fork recursion
+const MAX_FORK_DEPTH = 5;
+
+function checkForkDepth(deps: QueryDeps): void {
+  const depth = deps.context.metadata.forkDepth ?? 0;
+  if (depth >= MAX_FORK_DEPTH) {
+    throw new Error(`Fork depth limit exceeded (${MAX_FORK_DEPTH})`);
+  }
+  deps.context.metadata.forkDepth = depth + 1;
+}
+```
+
+### Coordinator Pattern (Multi-Agent Orchestration)
+
+```typescript
+interface CoordinatorConfig {
+  workers: WorkerAgent[];
+  strategy: 'sequential' | 'parallel' | 'priority';
+  timeout?: number;
+}
+
+class Coordinator {
+  private workers: Map<string, WorkerAgent>;
+  
+  constructor(private config: CoordinatorConfig) {
+    this.workers = new Map(
+      config.workers.map(w => [w.id, w])
+    );
+  }
+  
+  async delegate(
+    task: Task,
+    deps: QueryDeps
+  ): Promise<TaskResult> {
+    
+    // Coordinator only plans, never executes tools directly
+    const plan = await this.createPlan(task, deps);
+    
+    if (this.config.strategy === 'sequential') {
+      return await this.executeSequential(plan, deps);
+    } else if (this.config.strategy === 'parallel') {
+      return await this.executeParallel(plan, deps);
+    } else {
+      return await this.executePriority(plan, deps);
+    }
+  }
+  
+  private async executeSequential(
+    plan: ExecutionPlan,
+    deps: QueryDeps
+  ): Promise<TaskResult> {
+    
+    const results: StepResult[] = [];
+    
+    for (const step of plan.steps) {
+      const worker = this.selectWorker(step);
+      
+      const result = await worker.execute({
+        task: step.task,
+        context: {
+          previousResults: results,
+          parentDeps: deps
+        }
+      });
+      
+      results.push(result);
+      
+      // Early exit if step failed and not optional
+      if (!result.success && !step.optional) {
+        return {
+          success: false,
+          completedSteps: results,
+          failedAt: step.id
+        };
+      }
+    }
+    
+    return {
+      success: true,
+      completedSt
