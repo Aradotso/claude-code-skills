@@ -25,6 +25,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [oh-my-claudecode-multi-agent-orchestration](skills/oh-my-claudecode-multi-agent-orchestration/) | [install](https://skills.sh/aradotso/claude-code-skills/oh-my-claudecode-multi-agent-orchestration) | [Yeachan-Heo/oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode) | 2026-05-16 |
 | [free-claude-code-proxy](skills/free-claude-code-proxy/) | [install](https://skills.sh/aradotso/claude-code-skills/free-claude-code-proxy) | [Alishahryar1/free-claude-code](https://github.com/Alishahryar1/free-claude-code) | 2026-05-16 |
 | [claude-code-game-studios](skills/claude-code-game-studios/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-game-studios) | [Donchitos/Claude-Code-Game-Studios](https://github.com/Donchitos/Claude-Code-Game-Studios) | 2026-05-16 |
+| [aris-autonomous-ml-research](skills/aris-autonomous-ml-research/) | [install](https://skills.sh/aradotso/claude-code-skills/aris-autonomous-ml-research) | [wanshuiyin/Auto-claude-code-research-in-sleep](https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep) | 2026-05-16 |
 <!-- SKILL_INDEX -->
 
 ---
