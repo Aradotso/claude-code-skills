@@ -50,6 +50,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [claudecodeui-web-interface](skills/claudecodeui-web-interface/) | [install](https://skills.sh/aradotso/claude-code-skills/claudecodeui-web-interface) | [siteboon/claudecodeui](https://github.com/siteboon/claudecodeui) | 2026-05-17 |
 | [dive-into-claude-code-analysis](skills/dive-into-claude-code-analysis/) | [install](https://skills.sh/aradotso/claude-code-skills/dive-into-claude-code-analysis) | [VILA-Lab/Dive-into-Claude-Code](https://github.com/VILA-Lab/Dive-into-Claude-Code) | 2026-05-17 |
 | [claude-code-source-study](skills/claude-code-source-study/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-source-study) | [luyao618/Claude-Code-Source-Study](https://github.com/luyao618/Claude-Code-Source-Study) | 2026-05-17 |
+| [claude-code-usage-monitor](skills/claude-code-usage-monitor/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-usage-monitor) | [Maciek-roboblog/Claude-Code-Usage-Monitor](https://github.com/Maciek-roboblog/Claude-Code-Usage-Monitor) | 2026-05-17 |
 <!-- SKILL_INDEX -->
 
 ---
