@@ -43,6 +43,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [claude-code-infrastructure-showcase](skills/claude-code-infrastructure-showcase/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-infrastructure-showcase) | [diet103/claude-code-infrastructure-showcase](https://github.com/diet103/claude-code-infrastructure-showcase) | 2026-05-17 |
 | [claude-code-tips-productivity](skills/claude-code-tips-productivity/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-tips-productivity) | [ykdojo/claude-code-tips](https://github.com/ykdojo/claude-code-tips) | 2026-05-17 |
 | [claude-code-showcase](skills/claude-code-showcase/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-showcase) | [ChrisWiles/claude-code-showcase](https://github.com/ChrisWiles/claude-code-showcase) | 2026-05-17 |
+| [claude-code-architecture-patterns](skills/claude-code-architecture-patterns/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-architecture-patterns) | [alejandrobalderas/claude-code-from-source](https://github.com/alejandrobalderas/claude-code-from-source) | 2026-05-17 |
 <!-- SKILL_INDEX -->
 
 ---
