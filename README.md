@@ -40,6 +40,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [collection-claude-code-source-code](skills/collection-claude-code-source-code/) | [install](https://skills.sh/aradotso/claude-code-skills/collection-claude-code-source-code) | [chauncygu/collection-claude-code-source-code](https://github.com/chauncygu/collection-claude-code-source-code) | 2026-05-17 |
 | [how-claude-code-works-analysis](skills/how-claude-code-works-analysis/) | [install](https://skills.sh/aradotso/claude-code-skills/how-claude-code-works-analysis) | [Windy3f3f3f3f/how-claude-code-works](https://github.com/Windy3f3f3f3f/how-claude-code-works) | 2026-05-17 |
 | [claude-code-local-mlx](skills/claude-code-local-mlx/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-local-mlx) | [nicedreamzapp/claude-code-local](https://github.com/nicedreamzapp/claude-code-local) | 2026-05-17 |
+| [claude-code-infrastructure-showcase](skills/claude-code-infrastructure-showcase/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-infrastructure-showcase) | [diet103/claude-code-infrastructure-showcase](https://github.com/diet103/claude-code-infrastructure-showcase) | 2026-05-17 |
 <!-- SKILL_INDEX -->
 
 ---
