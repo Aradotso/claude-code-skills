@@ -41,6 +41,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [how-claude-code-works-analysis](skills/how-claude-code-works-analysis/) | [install](https://skills.sh/aradotso/claude-code-skills/how-claude-code-works-analysis) | [Windy3f3f3f3f/how-claude-code-works](https://github.com/Windy3f3f3f3f/how-claude-code-works) | 2026-05-17 |
 | [claude-code-local-mlx](skills/claude-code-local-mlx/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-local-mlx) | [nicedreamzapp/claude-code-local](https://github.com/nicedreamzapp/claude-code-local) | 2026-05-17 |
 | [claude-code-infrastructure-showcase](skills/claude-code-infrastructure-showcase/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-infrastructure-showcase) | [diet103/claude-code-infrastructure-showcase](https://github.com/diet103/claude-code-infrastructure-showcase) | 2026-05-17 |
+| [claude-code-tips-productivity](skills/claude-code-tips-productivity/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-tips-productivity) | [ykdojo/claude-code-tips](https://github.com/ykdojo/claude-code-tips) | 2026-05-17 |
 <!-- SKILL_INDEX -->
 
 ---
