@@ -53,6 +53,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [claude-code-usage-monitor](skills/claude-code-usage-monitor/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-usage-monitor) | [Maciek-roboblog/Claude-Code-Usage-Monitor](https://github.com/Maciek-roboblog/Claude-Code-Usage-Monitor) | 2026-05-17 |
 | [claude-code-config-trailofbits](skills/claude-code-config-trailofbits/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-config-trailofbits) | [trailofbits/claude-code-config](https://github.com/trailofbits/claude-code-config) | 2026-05-17 |
 | [awesome-claude-code-toolkit](skills/awesome-claude-code-toolkit/) | [install](https://skills.sh/aradotso/claude-code-skills/awesome-claude-code-toolkit) | [rohitg00/awesome-claude-code-toolkit](https://github.com/rohitg00/awesome-claude-code-toolkit) | 2026-05-17 |
+| [claude-code-transcripts](skills/claude-code-transcripts/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-transcripts) | [simonw/claude-code-transcripts](https://github.com/simonw/claude-code-transcripts) | 2026-05-17 |
 <!-- SKILL_INDEX -->
 
 ---
