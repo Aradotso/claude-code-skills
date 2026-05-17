@@ -55,6 +55,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [awesome-claude-code-toolkit](skills/awesome-claude-code-toolkit/) | [install](https://skills.sh/aradotso/claude-code-skills/awesome-claude-code-toolkit) | [rohitg00/awesome-claude-code-toolkit](https://github.com/rohitg00/awesome-claude-code-toolkit) | 2026-05-17 |
 | [claude-code-transcripts](skills/claude-code-transcripts/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-transcripts) | [simonw/claude-code-transcripts](https://github.com/simonw/claude-code-transcripts) | 2026-05-17 |
 | [claude-code-safety-net](skills/claude-code-safety-net/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-safety-net) | [kenryu42/claude-code-safety-net](https://github.com/kenryu42/claude-code-safety-net) | 2026-05-17 |
+| [claude-code-video-toolkit](skills/claude-code-video-toolkit/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-video-toolkit) | [digitalsamba/claude-code-video-toolkit](https://github.com/digitalsamba/claude-code-video-toolkit) | 2026-05-17 |
 <!-- SKILL_INDEX -->
 
 ---
