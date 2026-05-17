@@ -51,6 +51,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [dive-into-claude-code-analysis](skills/dive-into-claude-code-analysis/) | [install](https://skills.sh/aradotso/claude-code-skills/dive-into-claude-code-analysis) | [VILA-Lab/Dive-into-Claude-Code](https://github.com/VILA-Lab/Dive-into-Claude-Code) | 2026-05-17 |
 | [claude-code-source-study](skills/claude-code-source-study/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-source-study) | [luyao618/Claude-Code-Source-Study](https://github.com/luyao618/Claude-Code-Source-Study) | 2026-05-17 |
 | [claude-code-usage-monitor](skills/claude-code-usage-monitor/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-usage-monitor) | [Maciek-roboblog/Claude-Code-Usage-Monitor](https://github.com/Maciek-roboblog/Claude-Code-Usage-Monitor) | 2026-05-17 |
+| [claude-code-config-trailofbits](skills/claude-code-config-trailofbits/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-config-trailofbits) | [trailofbits/claude-code-config](https://github.com/trailofbits/claude-code-config) | 2026-05-17 |
 <!-- SKILL_INDEX -->
 
 ---
