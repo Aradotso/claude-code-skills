@@ -45,6 +45,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [claude-code-showcase](skills/claude-code-showcase/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-showcase) | [ChrisWiles/claude-code-showcase](https://github.com/ChrisWiles/claude-code-showcase) | 2026-05-17 |
 | [claude-code-architecture-patterns](skills/claude-code-architecture-patterns/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-architecture-patterns) | [alejandrobalderas/claude-code-from-source](https://github.com/alejandrobalderas/claude-code-from-source) | 2026-05-17 |
 | [claude-code-ultimate-guide](skills/claude-code-ultimate-guide/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-ultimate-guide) | [FlorianBruniaux/claude-code-ultimate-guide](https://github.com/FlorianBruniaux/claude-code-ultimate-guide) | 2026-05-17 |
+| [ralph-claude-code-autonomous-development](skills/ralph-claude-code-autonomous-development/) | [install](https://skills.sh/aradotso/claude-code-skills/ralph-claude-code-autonomous-development) | [frankbria/ralph-claude-code](https://github.com/frankbria/ralph-claude-code) | 2026-05-17 |
 <!-- SKILL_INDEX -->
 
 ---
