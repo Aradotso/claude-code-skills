@@ -49,6 +49,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [claude-code-rust](skills/claude-code-rust/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-rust) | [lorryjovens-hub/claude-code-rust](https://github.com/lorryjovens-hub/claude-code-rust) | 2026-05-17 |
 | [claudecodeui-web-interface](skills/claudecodeui-web-interface/) | [install](https://skills.sh/aradotso/claude-code-skills/claudecodeui-web-interface) | [siteboon/claudecodeui](https://github.com/siteboon/claudecodeui) | 2026-05-17 |
 | [dive-into-claude-code-analysis](skills/dive-into-claude-code-analysis/) | [install](https://skills.sh/aradotso/claude-code-skills/dive-into-claude-code-analysis) | [VILA-Lab/Dive-into-Claude-Code](https://github.com/VILA-Lab/Dive-into-Claude-Code) | 2026-05-17 |
+| [claude-code-source-study](skills/claude-code-source-study/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-source-study) | [luyao618/Claude-Code-Source-Study](https://github.com/luyao618/Claude-Code-Source-Study) | 2026-05-17 |
 <!-- SKILL_INDEX -->
 
 ---
