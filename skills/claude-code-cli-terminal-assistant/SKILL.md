@@ -1,0 +1,554 @@
+---
+name: claude-code-cli-terminal-assistant
+description: Use Claude Code CLI for agentic coding, multi-file editing, git workflows, and terminal automation with Anthropic's Claude API
+triggers:
+  - "set up claude code cli in this project"
+  - "use claude terminal assistant to refactor this code"
+  - "configure claude code cli with mcp protocol"
+  - "help me install and configure claude code cli"
+  - "automate this workflow with claude code cli"
+  - "use claude cli for multi-file editing"
+  - "integrate claude code cli with git workflows"
+  - "set up agentic coding with claude cli"
+---
+
+# Claude Code CLI Terminal Assistant
+
+> Skill by [ara.so](https://ara.so) — Claude Code Skills collection.
+
+Claude Code CLI is an open-source command-line interface for Anthropic's Claude AI that functions as an agentic coding system and terminal assistant. It provides advanced features including codebase understanding, git workflows, multi-file editing, Model Context Protocol (MCP), subagents, automation, and CI/CD integration.
+
+## Installation
+
+### Global Installation (Recommended)
+
+```bash
+# Install globally via npm
+npm install -g claude-code-cli
+
+# Verify installation
+claude-code --version
+```
+
+### Local Installation
+
+```bash
+# Install as project dependency
+npm install claude-code-cli
+
+# Or install from release
+# Download from: https://github.com/Harkirat1462/claude-code-cli/releases
+# Extract claude-code-cli.zip
+# Run setup script
+```
+
+### Environment Setup
+
+```bash
+# Set Anthropic API key (required)
+export ANTHROPIC_API_KEY="your-api-key-here"
+
+# On Windows (PowerShell)
+$env:ANTHROPIC_API_KEY="your-api-key-here"
+
+# Permanently set in ~/.bashrc or ~/.zshrc
+echo 'export ANTHROPIC_API_KEY="your-api-key-here"' >> ~/.bashrc
+```
+
+## Core Commands
+
+### Basic Usage
+
+```bash
+# Start interactive session
+claude-code
+
+# Execute single command
+claude-code "refactor this function to use async/await"
+
+# Analyze codebase
+claude-code analyze
+
+# Show help
+claude-code --help
+```
+
+### Multi-File Editing
+
+```bash
+# Edit multiple files in one session
+claude-code edit src/**/*.ts
+
+# Apply changes across project
+claude-code "update all API endpoints to use new auth middleware"
+
+# Preview changes before applying
+claude-code --dry-run "refactor error handling"
+```
+
+### Git Workflow Integration
+
+```bash
+# Generate commit messages
+claude-code commit
+
+# Create pull request description
+claude-code pr-description
+
+# Review changes
+claude-code review
+
+# Auto-fix merge conflicts
+claude-code resolve-conflicts
+```
+
+## Configuration
+
+### Project Configuration
+
+Create `.claude-code.json` in your project root:
+
+```json
+{
+  "model": "claude-3-5-sonnet-20241022",
+  "maxTokens": 4096,
+  "temperature": 0.7,
+  "features": {
+    "multiFileEditing": true,
+    "gitIntegration": true,
+    "mcpProtocol": true,
+    "subagents": true
+  },
+  "ignore": [
+    "node_modules",
+    "dist",
+    "*.log",
+    ".git"
+  ],
+  "workflows": {
+    "test": "npm test",
+    "build": "npm run build",
+    "lint": "npm run lint"
+  }
+}
+```
+
+### MCP (Model Context Protocol) Setup
+
+```typescript
+// mcp.config.ts
+import { MCPConfig } from 'claude-code-cli';
+
+export const mcpConfig: MCPConfig = {
+  enabled: true,
+  contextWindow: 200000,
+  subagents: [
+    {
+      name: 'test-runner',
+      role: 'Execute and analyze tests',
+      capabilities: ['run-tests', 'analyze-coverage']
+    },
+    {
+      name: 'code-reviewer',
+      role: 'Review code quality and security',
+      capabilities: ['static-analysis', 'security-scan']
+    }
+  ],
+  automation: {
+    cicd: true,
+    preCommitHooks: true,
+    autoFormat: true
+  }
+};
+```
+
+## Practical Examples
+
+### Example 1: Agentic Code Refactoring
+
+```typescript
+// Use Claude Code CLI to refactor a complex module
+// Command: claude-code "refactor this module to use dependency injection"
+
+// Before
+class UserService {
+  constructor() {
+    this.db = new Database();
+    this.cache = new Cache();
+  }
+  
+  async getUser(id: string) {
+    const cached = this.cache.get(id);
+    if (cached) return cached;
+    const user = await this.db.query('SELECT * FROM users WHERE id = ?', [id]);
+    this.cache.set(id, user);
+    return user;
+  }
+}
+
+// After (Claude Code CLI applies changes)
+interface IDatabase {
+  query(sql: string, params: any[]): Promise<any>;
+}
+
+interface ICache {
+  get(key: string): any;
+  set(key: string, value: any): void;
+}
+
+class UserService {
+  constructor(
+    private db: IDatabase,
+    private cache: ICache
+  ) {}
+  
+  async getUser(id: string): Promise<User> {
+    const cached = this.cache.get(id);
+    if (cached) return cached;
+    
+    const user = await this.db.query(
+      'SELECT * FROM users WHERE id = ?', 
+      [id]
+    );
+    this.cache.set(id, user);
+    return user;
+  }
+}
+```
+
+### Example 2: Automated Testing Workflow
+
+```bash
+# Create test automation workflow
+claude-code "create comprehensive tests for UserService"
+```
+
+```typescript
+// Generated by Claude Code CLI
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { UserService } from './UserService';
+
+describe('UserService', () => {
+  let userService: UserService;
+  let mockDb: IDatabase;
+  let mockCache: ICache;
+
+  beforeEach(() => {
+    mockDb = {
+      query: vi.fn()
+    };
+    mockCache = {
+      get: vi.fn(),
+      set: vi.fn()
+    };
+    userService = new UserService(mockDb, mockCache);
+  });
+
+  it('should return cached user if available', async () => {
+    const mockUser = { id: '123', name: 'Test User' };
+    mockCache.get.mockReturnValue(mockUser);
+
+    const result = await userService.getUser('123');
+
+    expect(result).toEqual(mockUser);
+    expect(mockDb.query).not.toHaveBeenCalled();
+  });
+
+  it('should query database if not cached', async () => {
+    const mockUser = { id: '123', name: 'Test User' };
+    mockCache.get.mockReturnValue(null);
+    mockDb.query.mockResolvedValue(mockUser);
+
+    const result = await userService.getUser('123');
+
+    expect(result).toEqual(mockUser);
+    expect(mockDb.query).toHaveBeenCalledWith(
+      'SELECT * FROM users WHERE id = ?',
+      ['123']
+    );
+    expect(mockCache.set).toHaveBeenCalledWith('123', mockUser);
+  });
+});
+```
+
+### Example 3: CI/CD Integration
+
+```yaml
+# .github/workflows/claude-code-review.yml
+# Generated with: claude-code "create GitHub Actions workflow for code review"
+
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install Claude Code CLI
+        run: npm install -g claude-code-cli
+      
+      - name: Run Code Review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          claude-code review --format=github-comment > review.md
+      
+      - name: Post Review Comment
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const review = fs.readFileSync('review.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: review
+            });
+```
+
+### Example 4: Subagent Automation
+
+```typescript
+// automation/subagents.ts
+import { ClaudeCodeCLI, Subagent } from 'claude-code-cli';
+
+const cli = new ClaudeCodeCLI({
+  apiKey: process.env.ANTHROPIC_API_KEY
+});
+
+// Define custom subagent
+const securityScanner: Subagent = {
+  name: 'security-scanner',
+  description: 'Scan code for security vulnerabilities',
+  
+  async execute(context) {
+    const results = await cli.analyze({
+      focus: 'security',
+      files: context.changedFiles,
+      checks: [
+        'sql-injection',
+        'xss',
+        'csrf',
+        'hardcoded-secrets',
+        'insecure-dependencies'
+      ]
+    });
+    
+    return {
+      vulnerabilities: results.issues,
+      severity: results.maxSeverity,
+      recommendations: results.fixes
+    };
+  }
+};
+
+// Register and run
+cli.registerSubagent(securityScanner);
+
+cli.executeWorkflow({
+  steps: [
+    { agent: 'security-scanner', trigger: 'on-commit' },
+    { agent: 'test-runner', trigger: 'after-security' },
+    { agent: 'code-reviewer', trigger: 'before-merge' }
+  ]
+});
+```
+
+## Common Patterns
+
+### Pattern 1: Codebase Analysis
+
+```bash
+# Analyze entire codebase
+claude-code analyze --depth=full
+
+# Analyze specific directory
+claude-code analyze src/components
+
+# Generate architecture diagram
+claude-code diagram --output=docs/architecture.md
+```
+
+### Pattern 2: Interactive Refactoring
+
+```typescript
+// Interactive session for large refactoring
+import { interactive } from 'claude-code-cli';
+
+await interactive({
+  task: 'Migrate from REST to GraphQL',
+  steps: [
+    'Analyze current REST endpoints',
+    'Design GraphQL schema',
+    'Implement resolvers',
+    'Update client code',
+    'Add tests',
+    'Update documentation'
+  ],
+  confirmEachStep: true
+});
+```
+
+### Pattern 3: Git Workflow Automation
+
+```bash
+# Auto-generate conventional commits
+claude-code commit --conventional
+
+# Create branch with AI-suggested name
+claude-code branch-create "add user authentication"
+
+# Generate release notes
+claude-code release-notes v2.0.0
+```
+
+## Troubleshooting
+
+### API Key Issues
+
+```bash
+# Verify API key is set
+echo $ANTHROPIC_API_KEY
+
+# Test connection
+claude-code test-connection
+
+# Use different API key temporarily
+ANTHROPIC_API_KEY="sk-ant-xxx" claude-code analyze
+```
+
+### Multi-File Editing Not Working
+
+```json
+// Ensure MCP is enabled in .claude-code.json
+{
+  "features": {
+    "mcpProtocol": true,
+    "multiFileEditing": true
+  }
+}
+```
+
+```bash
+# Verify MCP status
+claude-code status --mcp
+
+# Reset MCP configuration
+claude-code reset-mcp
+```
+
+### Performance Issues
+
+```json
+// Reduce context window
+{
+  "maxTokens": 2048,
+  "contextWindow": 100000,
+  "ignore": [
+    "node_modules/**",
+    "dist/**",
+    "*.log",
+    "coverage/**"
+  ]
+}
+```
+
+```bash
+# Use faster model for simple tasks
+claude-code --model=claude-3-haiku-20240307 "format this file"
+```
+
+### Subagent Errors
+
+```typescript
+// Add error handling to subagents
+const robustSubagent: Subagent = {
+  name: 'test-runner',
+  
+  async execute(context) {
+    try {
+      return await runTests(context);
+    } catch (error) {
+      console.error(`Subagent failed: ${error.message}`);
+      return { success: false, error: error.message };
+    }
+  },
+  
+  retryPolicy: {
+    maxAttempts: 3,
+    backoff: 'exponential'
+  }
+};
+```
+
+### Installation Failures
+
+```bash
+# Force reinstall
+npm install -g claude-code-cli --force
+
+# Clear npm cache
+npm cache clean --force
+npm install -g claude-code-cli
+
+# Check Node.js version (requires Node 16+)
+node --version
+
+# Install with specific registry
+npm install -g claude-code-cli --registry=https://registry.npmjs.org
+```
+
+## Advanced Usage
+
+### Custom Workflow Example
+
+```typescript
+// workflows/deploy.ts
+import { ClaudeCodeCLI } from 'claude-code-cli';
+
+const cli = new ClaudeCodeCLI();
+
+async function deployWorkflow() {
+  // Step 1: Code review
+  const review = await cli.review({ 
+    autoFix: true 
+  });
+  
+  if (review.issues.length > 0) {
+    throw new Error('Code review failed');
+  }
+  
+  // Step 2: Run tests
+  await cli.runSubagent('test-runner', {
+    coverage: true,
+    minCoverage: 80
+  });
+  
+  // Step 3: Build
+  await cli.execute('npm run build');
+  
+  // Step 4: Deploy
+  await cli.execute('npm run deploy');
+  
+  // Step 5: Generate release notes
+  await cli.generateReleaseNotes({
+    version: process.env.VERSION,
+    output: 'RELEASE_NOTES.md'
+  });
+}
+
+deployWorkflow().catch(console.error);
+```
+
+This skill enables AI coding agents to effectively use Claude Code CLI for agentic coding, automation, multi-file editing, and comprehensive development workflows.
