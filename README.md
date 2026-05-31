@@ -59,6 +59,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [feishu-claude-code-bridge](skills/feishu-claude-code-bridge/) | [install](https://skills.sh/aradotso/claude-code-skills/feishu-claude-code-bridge) | [zarazhangrui/feishu-claude-code-bridge](https://github.com/zarazhangrui/feishu-claude-code-bridge) | 2026-05-23 |
 | [llm-council-decision-framework](skills/llm-council-decision-framework/) | [install](https://skills.sh/aradotso/claude-code-skills/llm-council-decision-framework) | [aiwithremy/claude-skills-llm-council](https://github.com/aiwithremy/claude-skills-llm-council) | 2026-05-23 |
 | [claude-code-cli-terminal-assistant](skills/claude-code-cli-terminal-assistant/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-cli-terminal-assistant) | [Harkirat1462/claude-code-cli](https://github.com/Harkirat1462/claude-code-cli) | 2026-05-30 |
+| [free-claude-code-ai-desktop-app](skills/free-claude-code-ai-desktop-app/) | [install](https://skills.sh/aradotso/claude-code-skills/free-claude-code-ai-desktop-app) | [anthropic-claude-code-ai/free-claude-code-ai-desktop-app](https://github.com/anthropic-claude-code-ai/free-claude-code-ai-desktop-app) | 2026-05-31 |
 <!-- SKILL_INDEX -->
 
 ---
