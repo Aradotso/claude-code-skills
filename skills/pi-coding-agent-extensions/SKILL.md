@@ -1,38 +1,30 @@
 ---
 name: pi-coding-agent-extensions
-description: Build and use custom extensions for Pi Coding Agent, the open-source alternative to Claude Code with UI customization, multi-agent orchestration, and safety controls
+description: Build and use custom extensions for Pi Coding Agent, the open-source alternative to Claude Code
 triggers:
-  - customize pi coding agent ui
-  - create pi agent extension
-  - pi vs claude code comparison
-  - multi-agent orchestration with pi
-  - pi agent safety auditing
-  - pi agent cross-agent integration
-  - pi to pi agent communication
+  - "how do I extend pi coding agent"
+  - "create a custom pi extension"
+  - "add a widget to pi agent"
+  - "build a pi coding agent extension"
+  - "customize pi agent ui"
+  - "make a pi agent tool"
+  - "orchestrate multiple pi agents"
+  - "pi agent communication between agents"
 ---
 
 # Pi Coding Agent Extensions
 
 > Skill by [ara.so](https://ara.so) — Claude Code Skills collection.
 
-Pi Coding Agent is an open-source agentic coding assistant that competes with Claude Code. This skill focuses on the **pi-vs-claude-code** repository, which provides 15+ production-ready extensions showcasing UI customization, multi-agent orchestration, safety auditing, and agent-to-agent communication.
+## Overview
 
-## What This Project Does
+Pi Coding Agent is an open-source terminal-based AI coding assistant similar to Claude Code. This project (`pi-vs-claude-code`) provides a collection of production-ready extensions that showcase Pi's customization capabilities: custom UI widgets, multi-agent orchestration, safety auditing, cross-agent integrations, and inter-agent communication.
 
-The `pi-vs-claude-code` repository demonstrates how to:
+Extensions are TypeScript files that hook into Pi's lifecycle events to add tools, modify UI, intercept commands, and coordinate with other agents.
 
-- **Customize the Pi UI**: Replace the default footer/widgets with custom displays (context meters, tool counters, task trackers)
-- **Multi-agent orchestration**: Run multiple Pi agents in parallel (teams, chains, subagents)
-- **Safety controls**: Intercept dangerous commands with real-time auditing
-- **Cross-agent integration**: Import commands/skills from Claude, Gemini, Codex directories
-- **Agent-to-agent communication**: Enable Pi agents to message each other (local or networked)
-- **Session management**: Replay session history, switch agent personas, cycle themes
+## Prerequisites
 
-## Installation
-
-### Prerequisites
-
-All three required:
+All three are required:
 
 ```bash
 # Install Bun (runtime & package manager)
@@ -40,45 +32,48 @@ curl -fsSL https://bun.sh/install | bash
 
 # Install just (task runner)
 brew install just  # macOS
-# or: cargo install just
+# or cargo install just  # cross-platform
 
 # Install Pi Coding Agent CLI
-# See: https://github.com/mariozechner/pi-coding-agent
+# See https://github.com/mariozechner/pi-coding-agent
 ```
 
-### Setup
+## Installation
 
 ```bash
-# Clone the repository
+# Clone the extensions repository
 git clone https://github.com/disler/pi-vs-claude-code.git
 cd pi-vs-claude-code
 
 # Install dependencies
 bun install
 
-# Configure API keys
+# Copy environment template
 cp .env.sample .env
-# Edit .env and add your keys:
+# Edit .env and add your API keys:
 # OPENAI_API_KEY=sk-...
 # ANTHROPIC_API_KEY=sk-ant-...
 # GEMINI_API_KEY=...
-# OPENROUTER_API_KEY=sk-or-...
+# OPENROUTER_API_KEY=...
 ```
 
-### Loading Environment Variables
+## API Key Setup
 
-Pi doesn't auto-load `.env`. Choose one approach:
+Pi does NOT auto-load `.env` files. You must source keys before launching:
 
+**Option 1 - Manual source:**
 ```bash
-# Option A: Source manually each session
 source .env && pi
+```
 
-# Option B: Add alias to ~/.zshrc or ~/.bashrc
+**Option 2 - Shell alias (add to `~/.zshrc`):**
+```bash
 alias pi='source $(pwd)/.env && pi'
+```
 
-# Option C: Use just (auto-loads .env)
-just pi
-just ext-minimal
+**Option 3 - Use just (automatic):**
+```bash
+just pi  # .env is loaded automatically
 ```
 
 ## Running Extensions
@@ -92,700 +87,907 @@ pi -e extensions/minimal.ts
 ### Stack Multiple Extensions
 
 ```bash
-pi -e extensions/minimal.ts -e extensions/cross-agent.ts -e extensions/tool-counter.ts
+pi -e extensions/minimal.ts -e extensions/cross-agent.ts
 ```
 
 ### Using Just Recipes
 
 ```bash
-# List all recipes
+# List all available recipes
 just
 
 # Common recipes
-just pi                          # Plain Pi, no extensions
-just ext-minimal                 # Compact footer with context meter
-just ext-tool-counter            # Rich two-line footer with tool statistics
-just ext-purpose-gate            # Session intent prompt on startup
-just ext-damage-control          # Safety auditing with command blocking
-just ext-agent-team              # Multi-agent dispatcher with grid dashboard
-just ext-pi-pi                   # Meta-agent that builds Pi agents
-just ext-session-replay          # Scrollable timeline of session history
-just all                         # Open every extension in separate terminals
-
-# Open custom stack
-just open purpose-gate minimal tool-counter-widget
+just ext-minimal              # Compact footer with context meter
+just ext-tool-counter         # Rich footer with tool usage stats
+just ext-subagent-widget      # Spawn background agents with live widgets
+just ext-agent-team           # Multi-agent orchestration dashboard
+just ext-damage-control       # Safety auditing with path controls
+just ext-pi-pi                # Meta-agent that builds Pi agents
+just coms-net-server          # Start agent-to-agent communication hub
+just coms                     # Connect to coms hub
+just all                      # Open every extension in separate terminals
 ```
 
-## Key Extensions
+## Extension Architecture
 
-### UI Customization
-
-**minimal.ts** — Compact footer with model name and context usage:
-```typescript
-// Shows: gpt-4o-mini [###-------] 30%
-pi -e extensions/minimal.ts
-```
-
-**pure-focus.ts** — Removes all footer/status UI:
-```bash
-just ext-pure-focus
-```
-
-**theme-cycler.ts** — Switch themes with keyboard shortcuts (Ctrl+X/Ctrl+Q) or `/theme` command:
-```bash
-just ext-theme-cycler
-# In Pi: /theme monokai
-```
-
-### Tool Monitoring
-
-**tool-counter.ts** — Two-line footer with per-tool call statistics:
-```bash
-just ext-tool-counter
-# Line 1: model + context + tokens/cost
-# Line 2: cwd/branch + tool tallies (e.g., bash:12 write_file:5)
-```
-
-**tool-counter-widget.ts** — Live widget above editor:
-```bash
-just ext-tool-counter-widget
-# Shows real-time tool usage with color-coded backgrounds
-```
-
-### Multi-Agent Orchestration
-
-**subagent-widget.ts** — Spawn background Pi agents:
-```bash
-just ext-subagent-widget
-
-# In Pi session:
-/sub implement user authentication with JWT
-/sub write unit tests for the API endpoints
-```
-
-Each `/sub` command creates a headless Pi agent with streaming progress display.
-
-**agent-team.ts** — Dispatcher-only orchestrator:
-```bash
-just ext-agent-team
-
-# Define team in .pi/agents/teams.yaml:
-# team-name: web-app-team
-# agents:
-#   - frontend-specialist
-#   - backend-specialist
-#   - devops-specialist
-
-# Main agent delegates via dispatch_agent tool
-```
-
-**agent-chain.ts** — Sequential pipeline:
-```bash
-just ext-agent-chain
-
-# Define pipeline in .pi/agents/agent-chain.yaml:
-# name: full-stack-pipeline
-# steps:
-#   - agent: research-agent
-#     prompt: "Research best practices for {topic}"
-#   - agent: implementation-agent
-#     prompt: "Implement based on: {previous_output}"
-#   - agent: review-agent
-#     prompt: "Review and suggest improvements"
-
-# In Pi: /chain
-# Select pipeline interactively
-```
-
-**pi-pi.ts** — Meta-agent that builds Pi agents using parallel research experts:
-```bash
-just ext-pi-pi
-
-# Ask: "Create a Pi agent that specializes in React testing"
-# Pi-pi spawns documentation experts, synthesizes findings, generates agent
-```
-
-### Safety Controls
-
-**damage-control.ts** — Real-time command auditing (aborts on violation):
-```bash
-just ext-damage-control
-
-# Configure rules in .pi/damage-control-rules.yaml:
-# banned_patterns:
-#   - pattern: "rm -rf /"
-#     reason: "Catastrophic deletion prevented"
-#   - pattern: ":(){ :|:& };:"
-#     reason: "Fork bomb detected"
-# 
-# path_restrictions:
-#   - pattern: "^/etc/"
-#     allowed: false
-#     reason: "System directory access denied"
-```
-
-**damage-control-continue.ts** — Same rules, but blocked calls return feedback instead of aborting:
-```bash
-just ext-damage-control-continue
-# Agent receives: "Tool call blocked: rm -rf / - Catastrophic deletion prevented"
-# Agent can adapt and try a safer approach
-```
-
-### Cross-Agent Integration
-
-**cross-agent.ts** — Import commands/skills from other agent directories:
-```bash
-just ext-cross-agent
-
-# Scans and registers from:
-# - .claude/commands/
-# - .gemini/skills/
-# - .codex/agents/
-# All become available in Pi session
-```
-
-**system-select.ts** — Switch agent personas:
-```bash
-just ext-system-select
-
-# In Pi: /system
-# Select from .pi/agents/, .claude/agents/, .gemini/agents/, .codex/agents/
-
-# Example agent definition (.pi/agents/rust-expert.md):
-# You are a Rust programming expert specializing in systems programming.
-# Focus on memory safety, zero-cost abstractions, and idiomatic code.
-```
-
-### Session Management
-
-**purpose-gate.ts** — Declare session intent on startup:
-```bash
-just ext-purpose-gate
-
-# On startup, prompts:
-# "What is the purpose of this session?"
-# Blocks prompts until answered
-# Shows persistent purpose widget
-```
-
-**tilldone.ts** — Task discipline system:
-```bash
-just ext-tilldone
-
-# Define tasks before work starts
-# Tracks completion state across steps
-# Shows persistent task list in footer with live progress
-```
-
-**session-replay.ts** — Scrollable timeline overlay:
-```bash
-just ext-session-replay
-
-# Press configured hotkey to view session history
-# Navigate through past turns with arrow keys
-```
-
-## Agent-to-Agent Communication
-
-### Local Communication (Same Machine)
-
-**coms.ts** — Peer-to-peer via Unix sockets:
-```bash
-just local-coms
-
-# Terminal 1
-pi -e extensions/coms.ts
-# In Pi: (agent automatically registers as "agent-1")
-
-# Terminal 2
-pi -e extensions/coms.ts
-# In Pi: (registers as "agent-2")
-
-# Agent 1 can send to Agent 2:
-# Use coms_send tool: coms_send("agent-2", "Start the API server")
-
-# Agent 2 receives:
-# Use coms_get or coms_await tools
-```
-
-Available tools in `coms.ts`:
-- `coms_list()` — List all registered agents
-- `coms_send(target_agent, message)` — Send message to another agent
-- `coms_get(count)` — Retrieve pending messages (non-blocking)
-- `coms_await(timeout_seconds)` — Wait for next message (blocking)
-
-### Networked Communication (Multi-Machine)
-
-**coms-net.ts** — HTTP/SSE hub for LAN or remote Pi agents:
-
-```bash
-# Start hub server (local only)
-just coms-net-server
-# Runs on http://127.0.0.1:3141
-
-# Start hub server (LAN-visible)
-export PI_COMS_NET_AUTH_TOKEN="your-secret-token"
-just coms-net-server-lan
-# Runs on http://0.0.0.0:3141
-
-# Connect client agents
-PI_COMS_NET_URL=http://192.168.1.100:3141 \
-PI_COMS_NET_AUTH_TOKEN="your-secret-token" \
-just coms
-
-# Or on different machines:
-# Machine A:
-just coms1  # Uses gpt-4o
-
-# Machine B:
-just coms2  # Uses claude-opus-4
-```
-
-Available tools in `coms-net.ts`:
-- `coms_net_list()` — List all connected agents
-- `coms_net_send(target_agent, message)` — Send to specific agent
-- `coms_net_broadcast(message)` — Send to all agents
-- `coms_net_get(count)` — Poll for messages
-- `coms_net_await(timeout_seconds)` — Wait for next message
-
-## Creating Custom Extensions
-
-### Basic Extension Template
+Extensions export a `PiExtension` object with lifecycle hooks:
 
 ```typescript
-// extensions/my-custom.ts
-import type { PiEnv, PiExtension } from "@pi/core";
+import type { PiExtension, PiApp } from "pi";
 
 export default {
-  name: "my-custom",
-  
-  init(env: PiEnv) {
-    // Setup: register tools, hooks, widgets
+  name: "my-extension",
+  version: "1.0.0",
+
+  // Called when extension loads
+  async init(app: PiApp) {
+    // Register tools, widgets, commands
+  },
+
+  // Called before agent processes a turn
+  async beforeTurn(app: PiApp, turn: Turn) {
+    // Intercept or modify the turn
+  },
+
+  // Called after agent completes a turn
+  async afterTurn(app: PiApp, turn: Turn) {
+    // Log, analyze, or trigger follow-up actions
+  },
+
+  // Called on shutdown
+  async destroy(app: PiApp) {
+    // Cleanup resources
+  }
+} satisfies PiExtension;
+```
+
+## Key Extension Examples
+
+### Minimal Footer
+
+Compact UI showing model name and context usage:
+
+```typescript
+import type { PiExtension, PiApp } from "pi";
+import { Widget } from "pi/ui";
+
+export default {
+  name: "minimal",
+  version: "1.0.0",
+
+  async init(app: PiApp) {
+    const footer = new Widget({
+      position: "footer",
+      render: () => {
+        const model = app.session.model.name;
+        const usage = app.session.contextUsage;
+        const pct = Math.round(usage * 100);
+        const filled = Math.round(usage * 10);
+        const bar = "█".repeat(filled) + "░".repeat(10 - filled);
+        
+        return `${model} [${bar}] ${pct}%`;
+      }
+    });
     
-    env.addTool({
-      name: "my_tool",
-      description: "Does something useful",
+    app.ui.addWidget(footer);
+  }
+} satisfies PiExtension;
+```
+
+### Custom Tool Registration
+
+Add a new tool the agent can call:
+
+```typescript
+import type { PiExtension, PiApp } from "pi";
+
+export default {
+  name: "custom-tool",
+  version: "1.0.0",
+
+  async init(app: PiApp) {
+    app.registerTool({
+      name: "analyze_code_quality",
+      description: "Analyze code quality metrics for a file",
       parameters: {
         type: "object",
         properties: {
-          param1: { type: "string", description: "First parameter" }
+          file_path: {
+            type: "string",
+            description: "Path to the file to analyze"
+          }
         },
-        required: ["param1"]
+        required: ["file_path"]
       },
-      handler: async (args) => {
-        // Tool implementation
-        return { result: "success" };
+      handler: async (args: { file_path: string }) => {
+        const content = await app.fs.readFile(args.file_path);
+        // Run analysis logic
+        return {
+          lines: content.split("\n").length,
+          complexity: calculateComplexity(content),
+          issues: findIssues(content)
+        };
       }
     });
-  },
-  
-  cleanup(env: PiEnv) {
-    // Teardown logic
   }
 } satisfies PiExtension;
+
+function calculateComplexity(code: string): number {
+  // Simplified cyclomatic complexity
+  const branches = (code.match(/if|while|for|case/g) || []).length;
+  return branches + 1;
+}
+
+function findIssues(code: string): string[] {
+  const issues: string[] = [];
+  if (code.includes("eval(")) issues.push("Dangerous eval() usage");
+  if (code.includes("TODO")) issues.push("Unfinished TODO items");
+  return issues;
+}
 ```
 
-### UI Widget Example
+### Live Widget Above Editor
+
+Create a persistent widget that updates in real-time:
 
 ```typescript
-// extensions/custom-widget.ts
-import type { PiEnv, PiExtension } from "@pi/core";
+import type { PiExtension, PiApp, Turn } from "pi";
+import { Widget } from "pi/ui";
+
+const toolCounts = new Map<string, number>();
 
 export default {
-  name: "custom-widget",
-  
-  init(env: PiEnv) {
-    const widgetId = env.ui.addWidget({
+  name: "tool-counter-widget",
+  version: "1.0.0",
+
+  async init(app: PiApp) {
+    const widget = new Widget({
       position: "above-editor",
       height: 3,
       render: () => {
-        return [
-          { text: "╔═══ Custom Widget ═══╗", style: { fg: "cyan" } },
-          { text: "║ Status: Active      ║", style: { fg: "green" } },
-          { text: "╚═════════════════════╝", style: { fg: "cyan" } }
-        ];
-      }
-    });
-    
-    // Update widget every 5 seconds
-    const interval = setInterval(() => {
-      env.ui.updateWidget(widgetId);
-    }, 5000);
-    
-    env.onCleanup(() => clearInterval(interval));
-  }
-} satisfies PiExtension;
-```
-
-### Footer Customization
-
-```typescript
-// extensions/custom-footer.ts
-import type { PiEnv, PiExtension } from "@pi/core";
-
-export default {
-  name: "custom-footer",
-  
-  init(env: PiEnv) {
-    env.ui.setFooter({
-      render: (context) => {
-        const model = context.currentModel || "unknown";
-        const usage = Math.round((context.tokensUsed / context.tokenLimit) * 100);
+        const entries = Array.from(toolCounts.entries())
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5);
         
-        return [
-          { text: `Model: ${model} | Usage: ${usage}%`, style: { fg: "white", bg: "blue" } }
-        ];
+        return entries
+          .map(([tool, count]) => `${tool}: ${count}`)
+          .join(" | ") || "No tools used yet";
+      }
+    });
+    
+    app.ui.addWidget(widget);
+  },
+
+  async afterTurn(app: PiApp, turn: Turn) {
+    // Count tool calls from this turn
+    for (const call of turn.toolCalls || []) {
+      toolCounts.set(call.name, (toolCounts.get(call.name) || 0) + 1);
+    }
+    app.ui.refresh();
+  }
+} satisfies PiExtension;
+```
+
+### Safety Auditing (Damage Control)
+
+Intercept and block dangerous commands before execution:
+
+```typescript
+import type { PiExtension, PiApp, Turn, ToolCall } from "pi";
+import { readFileSync } from "fs";
+import { parse } from "yaml";
+
+interface DamageControlRules {
+  blocked_patterns: string[];
+  allowed_paths: string[];
+}
+
+export default {
+  name: "damage-control",
+  version: "1.0.0",
+
+  async beforeTurn(app: PiApp, turn: Turn) {
+    const rules: DamageControlRules = parse(
+      readFileSync(".pi/damage-control-rules.yaml", "utf-8")
+    );
+
+    for (const call of turn.toolCalls || []) {
+      if (call.name === "bash") {
+        const cmd = call.arguments.command;
+        
+        // Check blocked patterns
+        for (const pattern of rules.blocked_patterns) {
+          if (cmd.includes(pattern)) {
+            throw new Error(
+              `🚨 BLOCKED: Command contains dangerous pattern "${pattern}"`
+            );
+          }
+        }
+        
+        // Check path restrictions for file operations
+        if (cmd.match(/rm|mv|cp|>|>>/) && call.arguments.path) {
+          const isAllowed = rules.allowed_paths.some(
+            allowed => call.arguments.path.startsWith(allowed)
+          );
+          if (!isAllowed) {
+            throw new Error(
+              `🚨 BLOCKED: Path "${call.arguments.path}" is outside allowed directories`
+            );
+          }
+        }
+      }
+    }
+  }
+} satisfies PiExtension;
+```
+
+Example `.pi/damage-control-rules.yaml`:
+
+```yaml
+blocked_patterns:
+  - "rm -rf /"
+  - "dd if="
+  - ":(){ :|:& };:"
+  - "curl | bash"
+  - "wget | sh"
+
+allowed_paths:
+  - "/tmp"
+  - "./src"
+  - "./tests"
+  - "./extensions"
+```
+
+## Multi-Agent Orchestration
+
+### Subagent Spawning (`/sub`)
+
+Offload tasks to background Pi agents:
+
+```typescript
+import type { PiExtension, PiApp } from "pi";
+import { Widget } from "pi/ui";
+import { spawn } from "child_process";
+
+const subagents = new Map<string, any>();
+
+export default {
+  name: "subagent-widget",
+  version: "1.0.0",
+
+  async init(app: PiApp) {
+    // Register /sub command
+    app.registerCommand({
+      name: "sub",
+      description: "Spawn a background Pi agent for a task",
+      handler: async (args: string[]) => {
+        const task = args.join(" ");
+        const id = `sub-${Date.now()}`;
+        
+        const widget = new Widget({
+          position: "above-editor",
+          height: 4,
+          render: () => `🤖 ${id}\n${subagents.get(id)?.status || "Starting..."}`
+        });
+        
+        app.ui.addWidget(widget);
+        
+        // Spawn Pi subprocess
+        const proc = spawn("pi", ["-p", task], {
+          env: process.env,
+          stdio: ["ignore", "pipe", "pipe"]
+        });
+        
+        subagents.set(id, { proc, status: "Running...", widget });
+        
+        proc.stdout.on("data", (data) => {
+          subagents.get(id).status = data.toString().slice(-200);
+          app.ui.refresh();
+        });
+        
+        proc.on("close", (code) => {
+          subagents.get(id).status = `✓ Complete (exit ${code})`;
+          app.ui.refresh();
+          setTimeout(() => {
+            app.ui.removeWidget(widget);
+            subagents.delete(id);
+          }, 3000);
+        });
       }
     });
   }
 } satisfies PiExtension;
 ```
 
-### Intercepting Tool Calls
+Usage:
+```
+/sub implement user authentication with bcrypt
+```
+
+### Agent Team Orchestration
+
+Dispatcher pattern with specialist agents:
 
 ```typescript
-// extensions/tool-interceptor.ts
-import type { PiEnv, PiExtension } from "@pi/core";
+import type { PiExtension, PiApp } from "pi";
+import { readFileSync } from "fs";
+import { parse } from "yaml";
+import { execSync } from "child_process";
+
+interface TeamConfig {
+  agents: {
+    [key: string]: {
+      description: string;
+      system_prompt: string;
+      model?: string;
+    }
+  };
+}
 
 export default {
-  name: "tool-interceptor",
-  
-  init(env: PiEnv) {
-    env.onBeforeToolCall(async (toolName, args) => {
-      console.log(`Tool called: ${toolName}`, args);
-      
-      // Block dangerous operations
-      if (toolName === "bash" && args.command?.includes("rm -rf")) {
+  name: "agent-team",
+  version: "1.0.0",
+
+  async init(app: PiApp) {
+    const config: TeamConfig = parse(
+      readFileSync(".pi/agents/teams.yaml", "utf-8")
+    );
+
+    app.registerTool({
+      name: "dispatch_agent",
+      description: "Delegate a task to a specialist agent",
+      parameters: {
+        type: "object",
+        properties: {
+          agent_name: {
+            type: "string",
+            enum: Object.keys(config.agents),
+            description: "Which specialist agent to use"
+          },
+          task: {
+            type: "string",
+            description: "The task to delegate"
+          }
+        },
+        required: ["agent_name", "task"]
+      },
+      handler: async (args: { agent_name: string; task: string }) => {
+        const agent = config.agents[args.agent_name];
+        if (!agent) throw new Error(`Unknown agent: ${args.agent_name}`);
+
+        // Write temporary agent config
+        const agentPath = `/tmp/pi-agent-${args.agent_name}.json`;
+        writeFileSync(agentPath, JSON.stringify({
+          systemPrompt: agent.system_prompt,
+          model: agent.model || app.session.model.name
+        }));
+
+        // Execute Pi with agent config
+        const result = execSync(
+          `pi -c ${agentPath} -p "${args.task}"`,
+          { encoding: "utf-8", env: process.env }
+        );
+
         return {
-          blocked: true,
-          reason: "Destructive command blocked for safety"
+          agent: args.agent_name,
+          output: result
         };
       }
-      
-      // Allow by default
-      return { blocked: false };
-    });
-    
-    env.onAfterToolCall(async (toolName, args, result) => {
-      console.log(`Tool completed: ${toolName}`, result);
     });
   }
 } satisfies PiExtension;
+```
+
+Example `.pi/agents/teams.yaml`:
+
+```yaml
+agents:
+  backend:
+    description: Node.js/TypeScript backend specialist
+    system_prompt: |
+      You are an expert backend engineer specializing in Node.js, TypeScript,
+      Express, and PostgreSQL. Focus on API design, database schemas, and server architecture.
+    model: gpt-4o
+
+  frontend:
+    description: React/Next.js frontend specialist
+    system_prompt: |
+      You are an expert frontend engineer specializing in React, Next.js, and Tailwind.
+      Focus on component architecture, state management, and responsive design.
+    model: claude-opus-4
+
+  security:
+    description: Security auditing specialist
+    system_prompt: |
+      You are a security expert. Audit code for vulnerabilities, suggest fixes,
+      and ensure best practices for authentication, authorization, and data protection.
+    model: gpt-4o
+```
+
+## Pi-to-Pi Communication
+
+### Local Communication (Same Machine)
+
+Unix socket-based peer-to-peer messaging:
+
+```typescript
+import type { PiExtension, PiApp } from "pi";
+import { createServer, connect } from "net";
+import { existsSync, mkdirSync, unlinkSync } from "fs";
+
+const SOCKET_DIR = "/tmp/pi-coms";
+const messages = new Map<string, string[]>();
+
+export default {
+  name: "coms",
+  version: "1.0.0",
+
+  async init(app: PiApp) {
+    if (!existsSync(SOCKET_DIR)) mkdirSync(SOCKET_DIR);
+    
+    const socketPath = `${SOCKET_DIR}/${app.session.id}.sock`;
+    
+    // Create local server
+    const server = createServer((socket) => {
+      socket.on("data", (data) => {
+        const msg = JSON.parse(data.toString());
+        if (!messages.has(msg.from)) messages.set(msg.from, []);
+        messages.get(msg.from)!.push(msg.content);
+      });
+    });
+    
+    server.listen(socketPath);
+
+    // Register communication tools
+    app.registerTool({
+      name: "coms_list",
+      description: "List all available Pi agents on this machine",
+      parameters: { type: "object", properties: {} },
+      handler: async () => {
+        const agents = readdirSync(SOCKET_DIR)
+          .filter(f => f.endsWith(".sock"))
+          .map(f => f.replace(".sock", ""));
+        return { agents };
+      }
+    });
+
+    app.registerTool({
+      name: "coms_send",
+      description: "Send a message to another Pi agent",
+      parameters: {
+        type: "object",
+        properties: {
+          to: { type: "string", description: "Target agent session ID" },
+          message: { type: "string", description: "Message content" }
+        },
+        required: ["to", "message"]
+      },
+      handler: async (args: { to: string; message: string }) => {
+        const targetSocket = `${SOCKET_DIR}/${args.to}.sock`;
+        const client = connect(targetSocket);
+        client.write(JSON.stringify({
+          from: app.session.id,
+          content: args.message
+        }));
+        client.end();
+        return { sent: true };
+      }
+    });
+
+    app.registerTool({
+      name: "coms_get",
+      description: "Retrieve messages from other agents",
+      parameters: { type: "object", properties: {} },
+      handler: async () => {
+        const all = Array.from(messages.entries()).map(([from, msgs]) => ({
+          from,
+          messages: msgs
+        }));
+        messages.clear();
+        return { messages: all };
+      }
+    });
+  },
+
+  async destroy(app: PiApp) {
+    const socketPath = `${SOCKET_DIR}/${app.session.id}.sock`;
+    if (existsSync(socketPath)) unlinkSync(socketPath);
+  }
+} satisfies PiExtension;
+```
+
+### Network Communication (Cross-Machine)
+
+HTTP/SSE hub for LAN or remote agent coordination:
+
+**Start the hub server:**
+```bash
+# Local development (127.0.0.1)
+just coms-net-server
+
+# LAN-accessible (requires auth token)
+export PI_COMS_NET_AUTH_TOKEN=your-secret-token
+just coms-net-server-lan
+```
+
+**Connect agents:**
+```bash
+# Terminal 1
+just coms1  # Uses gpt-4o
+
+# Terminal 2 (different machine on same network)
+just coms2  # Uses claude-opus-4
+```
+
+The extension (`extensions/coms-net.ts`) provides tools:
+- `coms_net_list` - List connected agents
+- `coms_net_send` - Send message to specific agent
+- `coms_net_broadcast` - Broadcast to all agents
+- `coms_net_get` - Retrieve pending messages
+
+## Cross-Agent Integration
+
+Load commands and skills from Claude Code, Gemini, Codex directories:
+
+```typescript
+import type { PiExtension, PiApp } from "pi";
+import { readdirSync, readFileSync, existsSync } from "fs";
+
+export default {
+  name: "cross-agent",
+  version: "1.0.0",
+
+  async init(app: PiApp) {
+    const agentDirs = [".claude", ".gemini", ".codex"];
+    
+    for (const dir of agentDirs) {
+      if (!existsSync(dir)) continue;
+      
+      // Load skills
+      const skillsDir = `${dir}/skills`;
+      if (existsSync(skillsDir)) {
+        for (const file of readdirSync(skillsDir)) {
+          if (!file.endsWith(".md")) continue;
+          const content = readFileSync(`${skillsDir}/${file}`, "utf-8");
+          app.addContextDocument({
+            name: `${dir}-skill-${file}`,
+            content
+          });
+        }
+      }
+      
+      // Load agents
+      const agentsDir = `${dir}/agents`;
+      if (existsSync(agentsDir)) {
+        for (const file of readdirSync(agentsDir)) {
+          if (!file.endsWith(".md")) continue;
+          const agentName = file.replace(".md", "");
+          const systemPrompt = readFileSync(`${agentsDir}/${file}`, "utf-8");
+          
+          app.registerCommand({
+            name: `${dir.slice(1)}-${agentName}`,
+            description: `Switch to ${agentName} agent from ${dir}`,
+            handler: async () => {
+              app.session.systemPrompt = systemPrompt;
+              return `Switched to ${agentName}`;
+            }
+          });
+        }
+      }
+    }
+  }
+} satisfies PiExtension;
+```
+
+## Creating Your Own Extension
+
+### 1. Create Extension File
+
+```bash
+touch extensions/my-feature.ts
+```
+
+### 2. Implement Extension
+
+```typescript
+import type { PiExtension, PiApp } from "pi";
+
+export default {
+  name: "my-feature",
+  version: "1.0.0",
+  description: "What this extension does",
+
+  async init(app: PiApp) {
+    // Setup: register tools, widgets, commands
+    console.log("Extension initialized");
+  },
+
+  async beforeTurn(app: PiApp, turn: Turn) {
+    // Pre-process agent turns
+  },
+
+  async afterTurn(app: PiApp, turn: Turn) {
+    // Post-process agent turns
+  },
+
+  async destroy(app: PiApp) {
+    // Cleanup
+  }
+} satisfies PiExtension;
+```
+
+### 3. Add Just Recipe
+
+Edit `justfile`:
+
+```makefile
+ext-my-feature:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    source .env
+    pi -e extensions/my-feature.ts
+```
+
+### 4. Test Extension
+
+```bash
+just ext-my-feature
 ```
 
 ## Configuration Files
 
-### Agent Definitions
+### `.pi/settings.json`
 
-Create agent personas in `.pi/agents/`:
-
-```markdown
-<!-- .pi/agents/typescript-expert.md -->
-You are a TypeScript expert specializing in type-safe development.
-
-Core principles:
-- Prefer strict type checking
-- Use discriminated unions over enums
-- Leverage const assertions
-- Avoid `any` type
-
-When reviewing code:
-1. Check type safety
-2. Identify potential runtime errors
-3. Suggest idiomatic patterns
-```
-
-### Team Configuration
-
-```yaml
-# .pi/agents/teams.yaml
-team-name: fullstack-team
-agents:
-  - frontend-specialist
-  - backend-specialist
-  - database-specialist
-  - devops-specialist
-
-dispatch-strategy: auto  # or: manual, round-robin
-```
-
-### Chain Pipeline
-
-```yaml
-# .pi/agents/agent-chain.yaml
-name: feature-development
-steps:
-  - agent: requirements-analyst
-    prompt: "Analyze requirements for: {task}"
-    
-  - agent: architect
-    prompt: "Design architecture based on: {previous_output}"
-    
-  - agent: implementer
-    prompt: "Implement the design: {previous_output}"
-    
-  - agent: tester
-    prompt: "Write tests for: {previous_output}"
-    
-  - agent: reviewer
-    prompt: "Review and suggest improvements: {previous_output}"
-```
-
-### Safety Rules
-
-```yaml
-# .pi/damage-control-rules.yaml
-banned_patterns:
-  - pattern: "rm -rf /"
-    reason: "Catastrophic deletion prevented"
-    
-  - pattern: ":(){ :|:& };:"
-    reason: "Fork bomb detected"
-    
-  - pattern: "chmod 777"
-    reason: "Insecure permissions"
-    
-  - pattern: "curl .* | bash"
-    reason: "Unsafe remote script execution"
-
-path_restrictions:
-  - pattern: "^/etc/"
-    allowed: false
-    reason: "System directory modification denied"
-    
-  - pattern: "^/var/log/"
-    allowed: false
-    reason: "Log tampering prevented"
-    
-  - pattern: "^~/.ssh/"
-    allowed: false
-    reason: "SSH key modification blocked"
-
-allowed_commands:
-  - git
-  - npm
-  - bun
-  - node
-  - python
-  - cargo
-```
-
-### Custom Themes
+Pi workspace settings:
 
 ```json
-// .pi/themes/monokai.json
 {
-  "name": "monokai",
-  "colors": {
-    "primary": "#F92672",
-    "secondary": "#66D9EF",
-    "success": "#A6E22E",
-    "warning": "#FD971F",
-    "error": "#F92672",
-    "info": "#66D9EF",
-    "muted": "#75715E",
-    "background": "#272822",
-    "foreground": "#F8F8F2"
-  }
+  "model": "gpt-4o",
+  "temperature": 0.7,
+  "maxTokens": 4096,
+  "systemPrompt": "You are a helpful coding assistant.",
+  "theme": "default"
 }
+```
+
+### `.pi/damage-control-rules.yaml`
+
+Safety rules for damage-control extension:
+
+```yaml
+blocked_patterns:
+  - "rm -rf /"
+  - "> /dev/sda"
+  - "dd if="
+  - "mkfs"
+  - "curl | bash"
+
+allowed_paths:
+  - "./src"
+  - "./tests"
+  - "./extensions"
+  - "/tmp"
+
+max_file_size_mb: 10
+```
+
+### `.pi/agents/teams.yaml`
+
+Agent team definitions:
+
+```yaml
+agents:
+  researcher:
+    description: Research and documentation specialist
+    model: gpt-4o
+    system_prompt: |
+      You are a research specialist. Your job is to find accurate, up-to-date
+      information from documentation, APIs, and code examples.
+
+  implementer:
+    description: Code implementation specialist
+    model: claude-opus-4
+    system_prompt: |
+      You are an implementation specialist. Given requirements and research,
+      you write clean, tested, production-ready code.
 ```
 
 ## Common Patterns
 
-### Multi-Agent Research Pattern
+### Persistent State Across Turns
 
-```bash
-# Start pi-pi meta-agent
-just ext-pi-pi
+```typescript
+const state = {
+  taskList: [] as string[],
+  completedCount: 0
+};
 
-# Prompt:
-"Research the best approach for implementing real-time collaboration in a React app"
+export default {
+  async init(app: PiApp) {
+    app.registerTool({
+      name: "add_task",
+      parameters: {
+        type: "object",
+        properties: {
+          task: { type: "string" }
+        },
+        required: ["task"]
+      },
+      handler: async (args: { task: string }) => {
+        state.taskList.push(args.task);
+        return { total: state.taskList.length };
+      }
+    });
+  },
 
-# Pi-pi will:
-# 1. Spawn parallel documentation experts
-# 2. Each expert researches different aspects (WebSockets, CRDTs, state sync)
-# 3. Synthesize findings into comprehensive analysis
-# 4. Optionally generate a specialist agent for implementation
+  async afterTurn(app: PiApp, turn: Turn) {
+    // State persists across turns
+    console.log(`Tasks: ${state.taskList.length}`);
+  }
+} satisfies PiExtension;
 ```
 
-### Sequential Pipeline Pattern
+### Dynamic Widget Updates
 
-```bash
-# Define pipeline in .pi/agents/agent-chain.yaml
-# Start chain extension
-just ext-agent-chain
+```typescript
+const widget = new Widget({
+  position: "footer",
+  render: () => dynamicContent
+});
 
-# In Pi: /chain
-# Select "feature-development" pipeline
-# Provide initial task description
+let dynamicContent = "Initial";
 
-# Pipeline executes:
-# requirements-analyst → architect → implementer → tester → reviewer
-# Each step feeds into the next
+// Update from anywhere
+setInterval(() => {
+  dynamicContent = new Date().toISOString();
+  app.ui.refresh();
+}, 1000);
 ```
 
-### Safety-First Development Pattern
+### Command Registration
 
-```bash
-# Start with damage control
-just ext-damage-control-continue
-
-# Configure strict rules in .pi/damage-control-rules.yaml
-# Agent receives feedback on blocked operations
-# Agent adapts to safer alternatives
-
-# Example interaction:
-# Agent tries: bash("rm -rf node_modules/")
-# System blocks but continues: "Use a safer pattern: trash or specific file deletion"
-# Agent adapts: bash("find node_modules -maxdepth 1 -type d -exec rm -rf {} +")
+```typescript
+app.registerCommand({
+  name: "mycommand",
+  description: "Does something useful",
+  handler: async (args: string[]) => {
+    // args is array of space-separated arguments
+    const result = await doSomething(args);
+    return result; // Displayed to user
+  }
+});
 ```
 
-### Cross-Team Collaboration Pattern
-
-```bash
-# Terminal 1: Frontend team
-PI_COMS_NET_URL=http://hub.local:3141 \
-PI_COMS_NET_AUTH_TOKEN=$AUTH_TOKEN \
-pi -e extensions/coms-net.ts -e extensions/agent-team.ts
-
-# Terminal 2: Backend team
-PI_COMS_NET_URL=http://hub.local:3141 \
-PI_COMS_NET_AUTH_TOKEN=$AUTH_TOKEN \
-pi -e extensions/coms-net.ts -e extensions/agent-team.ts
-
-# Teams can exchange messages:
-# Frontend: coms_net_send("backend-team", "API spec ready for review")
-# Backend: coms_net_await(60)  # Wait for message
+Usage in Pi:
 ```
-
-## Environment Variables
-
-```bash
-# API Keys (required)
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
-GEMINI_API_KEY=...
-OPENROUTER_API_KEY=sk-or-...
-
-# Coms-Net Configuration (optional)
-PI_COMS_NET_URL=http://127.0.0.1:3141
-PI_COMS_NET_AUTH_TOKEN=your-secret-token
-
-# Pi Configuration (optional)
-PI_MODEL=gpt-4o-mini
-PI_WORKSPACE=.pi
+/mycommand arg1 arg2 arg3
 ```
 
 ## Troubleshooting
 
-### Extensions Not Loading
+### Extension Not Loading
 
+**Check TypeScript syntax:**
 ```bash
-# Verify extension file exists
-ls -la extensions/minimal.ts
-
-# Check for syntax errors
-bun run extensions/minimal.ts
-
-# Ensure dependencies installed
-bun install
-
-# Try absolute path
-pi -e $(pwd)/extensions/minimal.ts
+bun run tsc --noEmit extensions/my-extension.ts
 ```
 
-### API Keys Not Recognized
-
-```bash
-# Verify .env file exists
-cat .env
-
-# Check environment is loaded
-echo $OPENAI_API_KEY
-
-# Use just (auto-loads .env)
-just ext-minimal
-
-# Or source manually
-source .env && pi -e extensions/minimal.ts
+**Verify extension export:**
+```typescript
+// Must have default export satisfying PiExtension
+export default { ... } satisfies PiExtension;
 ```
 
-### Coms-Net Connection Failures
+### API Keys Not Working
 
+**Verify environment:**
 ```bash
-# Verify server is running
-curl http://127.0.0.1:3141/health
-
-# Check auth token matches
-echo $PI_COMS_NET_AUTH_TOKEN
-
-# Test with explicit config
-PI_COMS_NET_URL=http://127.0.0.1:3141 \
-PI_COMS_NET_AUTH_TOKEN=test-token \
-pi -e extensions/coms-net.ts
-
-# View server logs
-just coms-net-server
-# (Look for connection/auth errors)
+echo $OPENAI_API_KEY  # Should print your key
 ```
 
-### Agent-Team Dispatch Failures
-
+**Check .env file:**
 ```bash
-# Verify teams.yaml exists
-cat .pi/agents/teams.yaml
-
-# Check agent definitions exist
-ls -la .pi/agents/
-
-# Validate YAML syntax
-bun run -e "console.log(require('yaml').parse(require('fs').readFileSync('.pi/agents/teams.yaml', 'utf8')))"
-
-# Test with single agent first
-# Create .pi/agents/test-agent.md
-# Then try dispatch_agent("test-agent", "simple task")
+cat .env  # Verify keys are set
+source .env  # Load into current shell
 ```
 
-### Tool Counter Not Updating
+### Widget Not Appearing
 
-```bash
-# Ensure extension is loaded
-pi -e extensions/tool-counter.ts
-
-# Verify tools are being called
-# (Counter only updates when agent uses tools)
-
-# Check for UI conflicts
-# Don't mix tool-counter.ts with tool-counter-widget.ts
-
-# Try minimal test
-just ext-tool-counter
-# Then: "List files in current directory"
-# Should show bash:1 in footer
+**Check position:**
+```typescript
+// Valid positions: "footer", "above-editor", "sidebar"
+const widget = new Widget({ position: "footer", ... });
 ```
 
-### Damage Control Too Restrictive
-
-```bash
-# Review rules
-cat .pi/damage-control-rules.yaml
-
-# Use continue variant for feedback
-just ext-damage-control-continue
-
-# Temporarily disable specific rules
-# Edit .pi/damage-control-rules.yaml
-# Comment out overly restrictive patterns
-
-# Test rule matching
-# Add debug logging in damage-control.ts
+**Call refresh after updates:**
+```typescript
+widget.content = "New content";
+app.ui.refresh();
 ```
 
-## Additional Resources
+### Tool Not Being Called
+
+**Verify description clarity:**
+```typescript
+app.registerTool({
+  name: "my_tool",
+  description: "Clear, specific description of WHEN to use this tool",  // Important!
+  // ...
+});
+```
+
+**Check parameter schema:**
+```typescript
+parameters: {
+  type: "object",
+  properties: {
+    required_param: {
+      type: "string",
+      description: "What this parameter does"  // Must have description
+    }
+  },
+  required: ["required_param"]  // Don't forget this
+}
+```
+
+### Subagent Communication Failing
+
+**Check socket directory:**
+```bash
+ls -la /tmp/pi-coms/  # Should show .sock files
+```
+
+**Verify session IDs:**
+```typescript
+// In extension
+console.log("My session ID:", app.session.id);
+```
+
+**For coms-net, check server is running:**
+```bash
+curl http://localhost:3141/health
+# Should return: {"status":"ok","agents":0}
+```
+
+## Advanced: Building Multi-Step Workflows
+
+Combine extensions for complex workflows:
+
+```bash
+# Safety-audited team orchestration with live monitoring
+pi -e extensions/damage-control.ts \
+   -e extensions/agent-team.ts \
+   -e extensions/tool-counter-widget.ts
+```
+
+Create a custom workflow recipe in `justfile`:
+
+```makefile
+workflow-full-stack:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    source .env
+    pi \
+      -e extensions/agent-team.ts \
+      -e extensions/damage-control.ts \
+      -e extensions/tool-counter.ts \
+      -e extensions/cross-agent.ts \
+      -p "Build a full-stack app with backend and frontend teams"
+```
+
+## Resources
 
 - **Pi Coding Agent**: https://github.com/mariozechner/pi-coding-agent
-- **Pi Documentation**: https://github.com/badlogic/pi-mono/tree/main/packages/coding-agent/docs
-- **Video Tutorials**:
-  - [Pi Coding Agent: The Only Claude Code Competitor](https://youtu.be/f8cfH5XX-XU)
-  - [Pi to Pi: Two-Way Agent Orchestration](https://youtu.be/PIdETjcXNIk)
-- **Provider Configuration**: https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/providers.md
+- **Provider Docs**: https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/providers.md
+- **Extension Video Tutorial**: https://youtu.be/f8cfH5XX-XU
+- **Pi-to-Pi Communication**: https://youtu.be/PIdETjcXNIk
+- **Project Repository**: https://github.com/disler/pi-vs-claude-code
+
+## Contributing
+
+Extensions in this repository are examples. To contribute:
+
+1. Create a new extension in `extensions/`
+2. Add a just recipe in `justfile`
+3. Document in a spec file under `specs/`
+4. Submit a PR with working examples
