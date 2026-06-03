@@ -61,6 +61,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [claude-code-cli-terminal-assistant](skills/claude-code-cli-terminal-assistant/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-cli-terminal-assistant) | [Harkirat1462/claude-code-cli](https://github.com/Harkirat1462/claude-code-cli) | 2026-05-30 |
 | [free-claude-code-ai-desktop-app](skills/free-claude-code-ai-desktop-app/) | [install](https://skills.sh/aradotso/claude-code-skills/free-claude-code-ai-desktop-app) | [anthropic-claude-code-ai/free-claude-code-ai-desktop-app](https://github.com/anthropic-claude-code-ai/free-claude-code-ai-desktop-app) | 2026-05-31 |
 | [pi-coding-agent-extensions](skills/pi-coding-agent-extensions/) | [install](https://skills.sh/aradotso/claude-code-skills/pi-coding-agent-extensions) | [disler/pi-vs-claude-code](https://github.com/disler/pi-vs-claude-code) | 2026-06-01 |
+| [tufte-chart-design](skills/tufte-chart-design/) | [install](https://skills.sh/aradotso/claude-code-skills/tufte-chart-design) | [aref-vc/tufte-claude-skill](https://github.com/aref-vc/tufte-claude-skill) | 2026-06-03 |
 <!-- SKILL_INDEX -->
 
 ---
