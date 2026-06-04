@@ -64,6 +64,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [tufte-chart-design](skills/tufte-chart-design/) | [install](https://skills.sh/aradotso/claude-code-skills/tufte-chart-design) | [aref-vc/tufte-claude-skill](https://github.com/aref-vc/tufte-claude-skill) | 2026-06-03 |
 | [tufte-data-visualization](skills/tufte-data-visualization/) | [install](https://skills.sh/aradotso/claude-code-skills/tufte-data-visualization) | [aref-vc/tufte-claude-skill](https://github.com/aref-vc/tufte-claude-skill) | 2026-06-03 |
 | [persistia-claude-code-memory](skills/persistia-claude-code-memory/) | [install](https://skills.sh/aradotso/claude-code-skills/persistia-claude-code-memory) | [bernardohcrocha/persistia-for-claude-code](https://github.com/bernardohcrocha/persistia-for-claude-code) | 2026-06-04 |
+| [persistia-memory-system](skills/persistia-memory-system/) | [install](https://skills.sh/aradotso/claude-code-skills/persistia-memory-system) | [bernardohcrocha/persistia-for-claude-code](https://github.com/bernardohcrocha/persistia-for-claude-code) | 2026-06-04 |
 <!-- SKILL_INDEX -->
 
 ---
