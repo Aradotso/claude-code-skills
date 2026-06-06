@@ -66,6 +66,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [persistia-claude-code-memory](skills/persistia-claude-code-memory/) | [install](https://skills.sh/aradotso/claude-code-skills/persistia-claude-code-memory) | [bernardohcrocha/persistia-for-claude-code](https://github.com/bernardohcrocha/persistia-for-claude-code) | 2026-06-04 |
 | [persistia-memory-system](skills/persistia-memory-system/) | [install](https://skills.sh/aradotso/claude-code-skills/persistia-memory-system) | [bernardohcrocha/persistia-for-claude-code](https://github.com/bernardohcrocha/persistia-for-claude-code) | 2026-06-04 |
 | [persistia-memory-for-claude-code](skills/persistia-memory-for-claude-code/) | [install](https://skills.sh/aradotso/claude-code-skills/persistia-memory-for-claude-code) | [bernardohcrocha/persistia-for-claude-code](https://github.com/bernardohcrocha/persistia-for-claude-code) | 2026-06-04 |
+| [14days-build-claude-code-cli](skills/14days-build-claude-code-cli/) | [install](https://skills.sh/aradotso/claude-code-skills/14days-build-claude-code-cli) | [bozhouDev/14days-build-claude-code-cli](https://github.com/bozhouDev/14days-build-claude-code-cli) | 2026-06-06 |
 <!-- SKILL_INDEX -->
 
 ---
