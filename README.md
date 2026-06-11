@@ -69,6 +69,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [14days-build-claude-code-cli](skills/14days-build-claude-code-cli/) | [install](https://skills.sh/aradotso/claude-code-skills/14days-build-claude-code-cli) | [bozhouDev/14days-build-claude-code-cli](https://github.com/bozhouDev/14days-build-claude-code-cli) | 2026-06-06 |
 | [claude-code-academic-workflow](skills/claude-code-academic-workflow/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-academic-workflow) | [pedrohcgs/claude-code-my-workflow](https://github.com/pedrohcgs/claude-code-my-workflow) | 2026-06-07 |
 | [claude-code-prompts](skills/claude-code-prompts/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-prompts) | [repowise-dev/claude-code-prompts](https://github.com/repowise-dev/claude-code-prompts) | 2026-06-10 |
+| [everything-claude-code-zh](skills/everything-claude-code-zh/) | [install](https://skills.sh/aradotso/claude-code-skills/everything-claude-code-zh) | [xu-xiang/everything-claude-code-zh](https://github.com/xu-xiang/everything-claude-code-zh) | 2026-06-11 |
 <!-- SKILL_INDEX -->
 
 ---
