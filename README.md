@@ -72,6 +72,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [everything-claude-code-zh](skills/everything-claude-code-zh/) | [install](https://skills.sh/aradotso/claude-code-skills/everything-claude-code-zh) | [xu-xiang/everything-claude-code-zh](https://github.com/xu-xiang/everything-claude-code-zh) | 2026-06-11 |
 | [claude-code-cli-workflow](skills/claude-code-cli-workflow/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-cli-workflow) | [SheikhSheave/Claude-Code-CLI-Reference](https://github.com/SheikhSheave/Claude-Code-CLI-Reference) | 2026-06-17 |
 | [claude-code-cli-reference-workflow](skills/claude-code-cli-reference-workflow/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-cli-reference-workflow) | [SheikhSheave/Claude-Code-CLI-Reference](https://github.com/SheikhSheave/Claude-Code-CLI-Reference) | 2026-06-17 |
+| [claude-code-security-review-action](skills/claude-code-security-review-action/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-security-review-action) | [anthropics/claude-code-security-review](https://github.com/anthropics/claude-code-security-review) | 2026-07-04 |
 <!-- SKILL_INDEX -->
 
 ---
