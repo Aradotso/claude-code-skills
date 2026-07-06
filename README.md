@@ -77,6 +77,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [haiou-claude-personality](skills/haiou-claude-personality/) | [install](https://skills.sh/aradotso/claude-code-skills/haiou-claude-personality) | [haiou-666/haiou2.0-Claude-Code-](https://github.com/haiou-666/haiou2.0-Claude-Code-) | 2026-07-06 |
 | [haiou-claude-code-personality](skills/haiou-claude-code-personality/) | [install](https://skills.sh/aradotso/claude-code-skills/haiou-claude-code-personality) | [haiou-666/haiou2.0-Claude-Code-](https://github.com/haiou-666/haiou2.0-Claude-Code-) | 2026-07-06 |
 | [claude-code-merge-queue](skills/claude-code-merge-queue/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-merge-queue) | [funador/claude-code-merge-queue](https://github.com/funador/claude-code-merge-queue) | 2026-07-06 |
+| [haiou2-claude-personality](skills/haiou2-claude-personality/) | [install](https://skills.sh/aradotso/claude-code-skills/haiou2-claude-personality) | [haiou-666/haiou2.0-Claude-Code-](https://github.com/haiou-666/haiou2.0-Claude-Code-) | 2026-07-06 |
 <!-- SKILL_INDEX -->
 
 ---
