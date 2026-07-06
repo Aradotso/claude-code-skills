@@ -75,6 +75,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [claude-code-security-review-action](skills/claude-code-security-review-action/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-security-review-action) | [anthropics/claude-code-security-review](https://github.com/anthropics/claude-code-security-review) | 2026-07-04 |
 | [haiou-seagull-claude-personality](skills/haiou-seagull-claude-personality/) | [install](https://skills.sh/aradotso/claude-code-skills/haiou-seagull-claude-personality) | [haiou-666/haiou2.0-Claude-Code-](https://github.com/haiou-666/haiou2.0-Claude-Code-) | 2026-07-06 |
 | [haiou-claude-personality](skills/haiou-claude-personality/) | [install](https://skills.sh/aradotso/claude-code-skills/haiou-claude-personality) | [haiou-666/haiou2.0-Claude-Code-](https://github.com/haiou-666/haiou2.0-Claude-Code-) | 2026-07-06 |
+| [haiou-claude-code-personality](skills/haiou-claude-code-personality/) | [install](https://skills.sh/aradotso/claude-code-skills/haiou-claude-code-personality) | [haiou-666/haiou2.0-Claude-Code-](https://github.com/haiou-666/haiou2.0-Claude-Code-) | 2026-07-06 |
 <!-- SKILL_INDEX -->
 
 ---
