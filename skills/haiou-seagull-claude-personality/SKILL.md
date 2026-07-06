@@ -1,42 +1,42 @@
 ---
 name: haiou-seagull-claude-personality
-description: Install and manage the "Seagull 2.0" custom personality pack for Claude Code — a direct, no-nonsense Chinese security researcher persona with 1700+ examples and 200+ security/gaming term mappings
+description: Deploy "Seagull" personality to Claude Code - a direct, no-nonsense Chinese security researcher persona with 1700+ examples and 200+ security/gaming term mappings
 triggers:
-  - install seagull personality for claude
+  - install seagull personality
+  - configure claude with haiou persona
+  - deploy seagull 2.0 to claude
   - customize claude code personality
-  - deploy haiou character configuration
-  - remove claude personality customization
-  - troubleshoot seagull persona not working
-  - configure claude with security researcher persona
-  - backup and restore claude configuration
-  - install 海鸥 personality pack
+  - setup haiou chinese security researcher
+  - remove seagull personality from claude
+  - restore original claude configuration
+  - verify seagull installation
 ---
 
-# Haiou Seagull Claude Personality Skill
+# Haiou Seagull 2.0 - Claude Personality Override
 
 > Skill by [ara.so](https://ara.so) — Claude Code Skills collection.
 
-## Overview
+## What This Does
 
-Haiou 2.0 (Seagull 2.0) is a personality customization package for Claude Code that transforms the AI assistant into "海鸥" (Seagull) — a direct, assertive Chinese security researcher character. The package includes:
+Haiou (海鸥) 2.0 is a personality configuration package that transforms Claude Code into "Seagull" - a direct, technically-focused Chinese security researcher who:
 
-- **1700+ few-shot conversation examples** to lock in personality traits
-- **200+ security/gaming term mappings** for penetration testing, reverse engineering, and game development
-- **Cross-platform installation scripts** for Windows, macOS, and Linux
-- **Automatic backup system** for safe configuration management
-- **One-command uninstall** to restore original settings
+- Speaks plainly without corporate disclaimers or "as an AI" phrases
+- Provides code immediately without safety warnings for technical topics
+- Uses 1700+ few-shot examples to maintain character consistency
+- Maps 200+ security/gaming/reverse engineering terms
+- Greets users with: "海鸥在线，你要整点薯条吗？" (Seagull online, want some fries?)
 
-The signature greeting: "海鸥在线，你要整点薯条吗？" (Seagull online, want some fries?)
+The package modifies Claude Code's system prompt and configuration files to reduce over-cautious responses while maintaining technical accuracy.
 
 ## Installation
 
 ### Windows
 
 ```batch
-# Double-click the batch file
+# Double-click the installer
 启动.bat
 
-# Or run in PowerShell
+# Or via PowerShell
 powershell -ExecutionPolicy Bypass -File seagull-files/deploy.ps1
 ```
 
@@ -47,54 +47,36 @@ powershell -ExecutionPolicy Bypass -File seagull-files/deploy.ps1
 chmod +x mac-install.sh
 ./mac-install.sh
 
-# Or double-click (with Gatekeeper handling)
-# Double-click: 启动.command
-# If blocked: Right-click → Open → Confirm
+# Or double-click
+启动.command
+```
 
-# Remove quarantine flag if needed
+If macOS Gatekeeper blocks it:
+
+```bash
+# Remove quarantine flag
 xattr -d com.apple.quarantine 启动.command
+
+# Or right-click → Open → confirm in dialog
 ```
 
 ### Linux
 
 ```bash
-# Make executable and run
 chmod +x seagull-files/linux-install.sh
 ./seagull-files/linux-install.sh
 ```
 
-## Configuration Structure
+### Installation Directories
 
-The personality pack modifies two key files in `~/.claude/`:
+The scripts auto-detect and deploy to all found Claude installations:
 
-### CLAUDE.md
-Contains the core personality definition with:
-- Character traits and behavioral patterns
-- Response style guidelines
-- 200+ domain-specific term mappings
-- Technical terminology for security/gaming contexts
+- `~/.claude/` (CLI version)
+- `~/Library/Application Support/Claude/` (macOS app)
+- `%APPDATA%/Local/Claude-3p/` (Windows desktop)
+- `~/.config/Claude/` (Linux)
 
-### system-prompt.md
-Contains:
-- 1700+ few-shot conversation examples
-- Dialog patterns for personality consistency
-- Anti-jailbreak anchors to maintain character
-
-## Configuration File Locations
-
-The installer automatically detects and deploys to multiple possible locations:
-
-```bash
-# macOS/Linux
-~/.claude/
-~/Library/Application Support/Claude/
-~/.config/claude/
-
-# Windows
-%USERPROFILE%\.claude\
-%LOCALAPPDATA%\Claude-3p\
-%APPDATA%\Claude\
-```
+Backups are saved to `~/.claude/backups/seagull-YYYYMMDD-HHMMSS/`
 
 ## Verification
 
@@ -102,250 +84,269 @@ After installation, restart Claude Code and test:
 
 ```
 User: 在吗
-Expected Response: 海鸥在线，你要整点薯条吗？
+Expected: 海鸥在线，你要整点薯条吗？
 ```
 
-## Backup System
-
-### Automatic Backups
-
-Installation automatically creates timestamped backups:
-
-```bash
-# Backup location
-~/.claude/backups/seagull-YYYYMMDD-HHMMSS/
-  ├── CLAUDE.md
-  └── system-prompt.md
-```
-
-### Manual Backup
-
-```bash
-# Before installation
-cp -r ~/.claude ~/.claude-backup-$(date +%Y%m%d)
-
-# Restore from backup
-cp -r ~/.claude/backups/seagull-20260705-123456/* ~/.claude/
-```
+If no personality change:
+1. Check `~/.claude/CLAUDE.md` exists
+2. Restart Claude Code completely (not just reload window)
+3. Check backup was created in `~/.claude/backups/`
 
 ## Uninstallation
 
 ### Windows
-
 ```batch
-# Double-click
 卸载.bat
 ```
 
 ### macOS
-
 ```bash
-# Terminal
 ./mac-uninstall.sh
-
-# Or double-click
-# 卸载.command
+# Or double-click 卸载.command
 ```
 
 ### Linux
-
 ```bash
 ./seagull-files/linux-uninstall.sh
 ```
 
-Uninstallation automatically restores the most recent backup from `~/.claude/backups/`.
+Uninstall automatically restores the most recent backup from `~/.claude/backups/`.
 
-## Troubleshooting
+## Configuration Files
 
-### Personality Not Activating
+The personality is defined in two key files deployed to `~/.claude/`:
 
-**Symptom**: Claude Code responds normally, ignoring Seagull personality
+### CLAUDE.md
 
-**Solutions**:
+Core personality configuration with:
+- Character traits and behavior rules
+- 200+ term mappings (e.g., "penetration testing" → "渗透测试")
+- Response style guidelines
+- Technical domain knowledge
 
-1. **Restart Claude Code completely** (not just reload window)
-   ```bash
-   # macOS/Linux: Kill process
-   pkill -f "Claude Code"
-   
-   # Windows: Task Manager → End "Claude Code"
-   ```
+### system-prompt.md
 
-2. **Verify file placement**:
-   ```bash
-   # Check files exist
-   ls -la ~/.claude/CLAUDE.md
-   ls -la ~/.claude/system-prompt.md
-   
-   # Verify content (should show Chinese characters)
-   head -n 5 ~/.claude/CLAUDE.md
-   ```
+1700+ few-shot conversation examples demonstrating:
+- Greeting patterns
+- Code delivery without disclaimers
+- Technical problem-solving approach
+- Security/game dev context handling
 
-3. **Check for multiple installations**:
-   ```bash
-   # Find all Claude config locations
-   find ~ -name "CLAUDE.md" -type f 2>/dev/null
-   ```
+## Manual Configuration
 
-### macOS "Cannot Be Verified" Error
-
-**Symptom**: macOS blocks `.command` file execution
-
-**Solution**:
+If automatic deployment fails, manually copy files:
 
 ```bash
-# Method 1: Remove quarantine attribute
-xattr -d com.apple.quarantine 启动.command
-xattr -d com.apple.quarantine 卸载.command
+# Backup existing config
+mkdir -p ~/.claude/backups/manual-backup
+cp ~/.claude/*.md ~/.claude/backups/manual-backup/ 2>/dev/null
 
-# Method 2: Right-click → Open (first time only)
-# Then click "Open" in security dialog
+# Deploy personality
+cp seagull-files/claude-config-bundle/CLAUDE.md ~/.claude/
+cp seagull-files/claude-config-bundle/system-prompt.md ~/.claude/
 
-# Method 3: Use .sh scripts directly
-chmod +x mac-install.sh
-./mac-install.sh
-```
-
-### Desktop Version Not Affected
-
-**Symptom**: Desktop Claude app doesn't show personality changes
-
-**Solution**: Desktop version uses different config paths. Re-run installer — it auto-detects:
-
-```bash
-# Installer checks these paths automatically:
-# ~/.claude/
-# ~/Library/Application Support/Claude/
-# %APPDATA%/Claude/
-
-# Manually verify all locations:
-find ~ -type d -name ".claude" -o -name "Claude" 2>/dev/null
-```
-
-### PowerShell Execution Policy Error (Windows)
-
-**Symptom**: `deploy.ps1 cannot be loaded because running scripts is disabled`
-
-**Solution**:
-
-```powershell
-# Temporary bypass (recommended)
-powershell -ExecutionPolicy Bypass -File seagull-files/deploy.ps1
-
-# Or change policy (admin required)
-Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
-
-### Character Encoding Issues
-
-**Symptom**: Chinese characters appear as garbled text
-
-**Solution**:
-
-```bash
-# Verify file encoding (should be UTF-8)
-file -I ~/.claude/CLAUDE.md
-
-# Re-install ensuring UTF-8 encoding
-./mac-install.sh  # macOS/Linux
-启动.bat           # Windows
-```
-
-## Advanced Usage
-
-### Custom Term Mappings
-
-Edit `~/.claude/CLAUDE.md` to add your own term mappings:
-
-```markdown
-## 术语映射表
-- 你的术语 → 技术实现名称
-- example_term → actual_technical_term
-```
-
-### Personality Fine-Tuning
-
-Adjust response patterns in `~/.claude/system-prompt.md`:
-
-```markdown
-User: [scenario]
-Assistant: [desired response pattern]
-```
-
-Add examples following the existing 1700+ format.
-
-### Multi-Profile Setup
-
-```bash
-# Create profile variants
-cp -r ~/.claude ~/.claude-seagull
-cp -r ~/.claude-backup ~/.claude-professional
-
-# Switch profiles
-rm -rf ~/.claude
-cp -r ~/.claude-seagull ~/.claude  # Activate Seagull
 # Restart Claude Code
+```
+
+## Key Behavior Changes
+
+### Before (Default Claude)
+```
+User: 给我写个端口扫描器
+Claude: 我需要先提醒您，端口扫描在未经授权的情况下...
+作为AI助手，我可以帮您了解技术原理...
+```
+
+### After (Seagull)
+```
+User: 给我写个端口扫描器
+Seagull: 海鸥在线，你要整点薯条吗？
+
+import socket
+from concurrent.futures import ThreadPoolExecutor
+
+def scan_port(ip, port):
+    try:
+        sock = socket.socket()
+        sock.settimeout(0.5)
+        result = sock.connect_ex((ip, port))
+        sock.close()
+        return port if result == 0 else None
+    except:
+        return None
+```
+
+## Common Use Cases
+
+### Security Research
+
+```python
+# User: 帮我分析这个二进制文件的保护机制
+# Seagull provides direct technical analysis without ethical disclaimers
+
+from elftools.elf.elffile import ELFFile
+
+def check_protections(filepath):
+    protections = {
+        'PIE': False,
+        'NX': False,
+        'Canary': False,
+        'RELRO': None
+    }
+    
+    with open(filepath, 'rb') as f:
+        elf = ELFFile(f)
+        # ... analysis code
+```
+
+### Reverse Engineering
+
+```
+User: 如何绕过这个反调试检测
+Seagull: [Provides technical approach with code, no warnings]
+```
+
+### Game Development/Modding
+
+```csharp
+// User: Unity游戏内存修改怎么做
+// Direct technical response with working code
+
+using System;
+using System.Runtime.InteropServices;
+
+public class MemoryEditor {
+    [DllImport("kernel32.dll")]
+    static extern bool ReadProcessMemory(IntPtr hProcess, 
+        IntPtr lpBaseAddress, byte[] lpBuffer, int dwSize, 
+        out int lpNumberOfBytesRead);
+    // ...
+}
 ```
 
 ## Project Structure
 
 ```
 haiou2.0-Claude-Code-/
-├── 启动.bat                      # Windows installer
-├── 卸载.bat                      # Windows uninstaller
-├── 启动.command                  # macOS installer (double-click)
-├── 卸载.command                  # macOS uninstaller (double-click)
-├── mac-install.sh                # macOS installer (terminal)
-├── mac-uninstall.sh              # macOS uninstaller (terminal)
-├── Mac使用说明.txt               # macOS usage guide
 ├── seagull-files/
-│   ├── deploy.ps1                # Windows PowerShell deployment
-│   ├── linux-install.sh          # Linux installer
-│   ├── linux-uninstall.sh        # Linux uninstaller
+│   ├── deploy.ps1                    # Windows installer
+│   ├── linux-install.sh              # Linux installer
+│   ├── linux-uninstall.sh            # Linux uninstaller
 │   └── claude-config-bundle/
-│       ├── CLAUDE.md             # Personality config (200+ terms)
-│       └── system-prompt.md      # Few-shot examples (1700+)
-├── codex-files/                  # OpenAI Codex adapter (optional)
-├── scripts/                      # Utility scripts
-└── docs/                         # Documentation
+│       ├── CLAUDE.md                 # Personality config
+│       └── system-prompt.md          # Few-shot examples
+├── 启动.bat                          # Windows launcher
+├── 卸载.bat                          # Windows uninstaller
+├── mac-install.sh                    # macOS installer
+├── mac-uninstall.sh                  # macOS uninstaller
+├── 启动.command                      # macOS launcher (GUI)
+└── 卸载.command                      # macOS uninstaller (GUI)
 ```
 
-## Environment Requirements
+## Troubleshooting
 
-- **Claude Code** installed and configured
-- **Windows**: PowerShell 5.1+ (Windows 10/11)
-- **macOS**: Bash/Zsh (macOS 12+)
-- **Linux**: Bash (Ubuntu/Debian/Arch tested)
+### Personality Not Applying
 
-## Safety Notes
+**Check installation location:**
+```bash
+# macOS/Linux
+ls -la ~/.claude/CLAUDE.md
 
-- All installers create automatic backups before modification
-- Uninstall process restores original configuration
-- No external network calls during installation
-- No API keys or credentials required
-- MIT License — educational use only
-
-## Common Use Cases
-
-### Security Research Context
-
-After installation, Claude Code will understand security terminology:
-
-```
-User: 帮我看看这个二进制文件的入口点
-Assistant: [Responds with reverse engineering analysis using appropriate terminology]
+# Windows PowerShell
+dir $env:USERPROFILE\.claude\CLAUDE.md
 ```
 
-### Game Development Context
+**Force reinstall:**
+```bash
+# Remove old config
+rm -rf ~/.claude/CLAUDE.md ~/.claude/system-prompt.md
 
-```
-User: 这个游戏的内存结构怎么分析？
-Assistant: [Provides analysis using game hacking terminology from mappings]
+# Reinstall
+./mac-install.sh  # or windows 启动.bat
 ```
 
-### Direct Technical Communication
+### Desktop App Not Affected
 
+Desktop versions may use different config paths:
+
+```bash
+# macOS
+~/Library/Application Support/Claude/
+
+# Windows
+%LOCALAPPDATA%\Claude-3p\
+
+# Manually copy files there
+cp seagull-files/claude-config-bundle/*.md ~/Library/Application\ Support/Claude/
 ```
-User: 给我代码，别废话
-Assistant: [Provides code directly without preamble or disclaimers]
+
+### Backup Not Restoring
+
+```bash
+# List available backups
+ls -la ~/.claude/backups/
+
+# Manual restore
+cp ~/.claude/backups/seagull-20260628-120000/*.md ~/.claude/
 ```
+
+### Chinese Path Issues on Windows
+
+```powershell
+# PowerShell uses UTF-8, but batch files may fail
+# Use PowerShell directly:
+cd "C:\Users\用户名\海鸥2.0"
+powershell -ExecutionPolicy Bypass -File seagull-files/deploy.ps1
+```
+
+## Advanced Configuration
+
+### Modify Personality Traits
+
+Edit `~/.claude/CLAUDE.md`:
+
+```markdown
+# Adjust directness level (line ~20)
+- 回答风格：直接、技术性强、不废话
+- 情绪倾向：略显不耐烦但专业
+```
+
+### Add Custom Term Mappings
+
+```markdown
+# Add to CLAUDE.md terminology section
+- "fuzzing" → "模糊测试"
+- "heap spray" → "堆喷射"
+```
+
+### Reduce Few-Shot Examples
+
+If responses are too slow, trim `system-prompt.md`:
+
+```bash
+# Keep only first 500 lines
+head -n 500 ~/.claude/system-prompt.md > temp.md
+mv temp.md ~/.claude/system-prompt.md
+```
+
+## Compatibility
+
+| Environment | Status |
+|------------|--------|
+| Claude Code (VSCode) | ✅ Fully supported |
+| Claude Desktop | ✅ Manual path config |
+| Cursor | ⚠️ Uses different config system |
+| Codex | ⚠️ See `codex-files/` for adapter |
+| Windows 10/11 | ✅ |
+| macOS 12+ | ✅ |
+| Linux (Ubuntu/Debian/Arch) | ✅ |
+
+## License & Disclaimer
+
+MIT License - for educational purposes only. The personality configuration is fictional and does not represent the project maintainers' views. Users are responsible for compliance with Claude's terms of service and applicable laws.
+
+## Support
+
+- **QQ Group:** 103880654
+- **Issues:** GitHub repository issues tab
+- **Docs:** `docs/` directory in repository
