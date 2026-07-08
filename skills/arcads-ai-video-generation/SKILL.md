@@ -1,58 +1,50 @@
 ---
 name: arcads-ai-video-generation
-description: Create AI marketing videos and static Meta image ads using Arcads API with Seedance 2.0, Sora 2, Veo 3.1, Kling, Nano Banana, and ChatGPT Image 2
+description: Create AI marketing videos and static image ads using Arcads API with Seedance 2.0, Sora 2, Veo 3.1, Kling 3.0, Nano Banana, and 37-template Meta ad library
 triggers:
-  - generate an AI video ad with Arcads
-  - create UGC video using Seedance
-  - make a static Meta image ad
-  - generate AI influencer character sheet
-  - create Pixar-style animated ad
-  - animate product image to video with Veo
-  - generate b-roll clip with Kling
-  - make claymation ad with Arcads
+  - generate an arcads video
+  - create AI marketing video with seedance
+  - make a ugc video with arcads
+  - generate nano banana product image
+  - create meta image ad with arcads
+  - animate still to video with veo
+  - build pixar style ad campaign
+  - make claymation ad with arcads
 ---
 
 # Arcads AI Video Generation
 
 > Skill by [ara.so](https://ara.so) — Claude Code Skills collection.
 
-Arcads is a comprehensive AI video and image generation platform for marketing creative. This skill enables agents to orchestrate multi-step ad creation workflows using Seedance 2.0 (flagship video model), Sora 2, Veo 3.1, Kling 3.0, Grok Video, Nano Banana 2/Pro/Edit, ChatGPT Image 2, OmniHuman, and audio-driven models — plus a 37-template static Meta image-ad library and pipelines for Pixar-style and claymation animated ads.
+Create AI marketing videos and static image ads using the Arcads external API. Supports **Seedance 2.0** (flagship video model), **Sora 2**, **Veo 3.1**, **Kling 3.0**, **Grok Video**, **Nano Banana 2/Pro/Edit**, **ChatGPT Image 2**, **OmniHuman**, and **Audio-driven** lip-sync. Also includes a 37-template static Meta image-ad library and multi-step pipelines for Pixar-style and claymation animated ads.
 
 ## Installation
 
-### 1. Clone the repository
+### Clone and Setup
 
 ```bash
 git clone https://github.com/krusemediallc/arcads-claude-code.git
 cd arcads-claude-code
-```
-
-### 2. Run setup
-
-```bash
 ./scripts/setup.sh
 ```
 
-This will:
+The setup script will:
 - Prompt for your Arcads API key (get it at [app.arcads.ai/settings/api](https://app.arcads.ai/settings/api))
 - Save credentials to `.env` (gitignored)
-- Verify API connection
 - Create `MASTER_CONTEXT.md` workspace file
+- Verify API connection
 
-### 3. Prerequisites
+### Prerequisites
 
-| Tool | Required for | Install (macOS) |
-|---|---|---|
-| **Python 3.10+** | All workflows | `brew install python@3.12` |
-| **`ffmpeg`** | Video stitching, chroma-key overlay | `brew install ffmpeg` |
-| **`jq`** | JSON parsing in bash scripts | `brew install jq` |
-| **Node.js** | Caption burn-in (hyperframes) | `brew install node` |
-| **`whisper`** | Caption transcription | `pip install openai-whisper` |
+| Tool | Required For | Install (macOS) |
+|------|-------------|-----------------|
+| Python 3.10+ | Core functionality | `brew install python@3.12` |
+| ffmpeg | Video stitching, chroma-key | `brew install ffmpeg` |
+| jq | Shell script parsing | `brew install jq` |
+| Node.js | Caption burn-in (hyperframes) | `brew install node` |
+| whisper | Transcription | `pip install openai-whisper` |
 
-Linux: `apt install ffmpeg jq nodejs python3`  
-Windows: Use WSL2 (bash required)
-
-### 4. Environment variables
+### Environment Variables
 
 Create `.env` in project root:
 
@@ -60,836 +52,834 @@ Create `.env` in project root:
 ARCADS_API_KEY=your_api_key_here
 ```
 
-## API Overview
+## Core API Patterns
 
-Base URL: `https://app.arcads.ai/api`
+### Base Configuration
 
-All requests require header:
-```
-Authorization: Bearer ${ARCADS_API_KEY}
-```
+All API calls use:
+- **Base URL**: `https://app.arcads.ai/api`
+- **Authentication**: `x-api-key` header
+- **Content-Type**: `application/json`
 
-### Common response pattern
-
-```json
-{
-  "id": "gen_abc123",
-  "status": "pending",
-  "model": "seedance-2",
-  "createdAt": "2026-07-08T12:00:00Z"
-}
-```
-
-Poll with `GET /v1/videos/{id}` or `GET /v1/images/{id}` until `status: "completed"`.
-
-## Core Workflows
-
-### 1. Seedance 2.0 Video (Flagship Model)
-
-**Best for:** UGC product reviews, premium reveals, product heroes, studio lookbooks, feature walkthroughs
-
-#### UGC selfie-style product review
+### Python Request Template
 
 ```python
-import requests
 import os
-import time
-import json
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 API_KEY = os.getenv('ARCADS_API_KEY')
 BASE_URL = 'https://app.arcads.ai/api'
 
-def create_seedance_ugc(prompt_text, duration=12):
-    """
-    Generate Seedance 2.0 UGC video using 9-layer formula
-    """
-    headers = {
-        'Authorization': f'Bearer {API_KEY}',
-        'Content-Type': 'application/json'
-    }
-    
-    payload = {
-        'model': 'seedance-2',
-        'prompt': prompt_text,
-        'duration': duration,
-        'style': 'ugc',  # iPhone-shot aesthetic
-        'aspectRatio': '9:16'
-    }
-    
-    response = requests.post(
-        f'{BASE_URL}/v1/videos/generate',
-        headers=headers,
-        json=payload
-    )
-    
-    if response.status_code != 200:
-        raise Exception(f"API error: {response.text}")
-    
-    result = response.json()
-    video_id = result['id']
-    
-    # Poll for completion
-    while True:
-        status_resp = requests.get(
-            f'{BASE_URL}/v1/videos/{video_id}',
-            headers=headers
-        )
-        status = status_resp.json()
-        
-        if status['status'] == 'completed':
-            return status['url']
-        elif status['status'] == 'failed':
-            raise Exception(f"Generation failed: {status.get('error')}")
-        
-        print(f"Status: {status['status']}... waiting 10s")
-        time.sleep(10)
-
-# Example usage
-prompt = """
-Woman in modern kitchen, natural lighting, holds product bottle.
-Direct eye contact, casual smile. "I used to buy [competitor] until I found this."
-Gestures with product. "The difference? Actually works." 
-Shows product label to camera. iPhone-shot aesthetic, authentic delivery.
-"""
-
-video_url = create_seedance_ugc(prompt, duration=12)
-print(f"Video ready: {video_url}")
-```
-
-#### Premium product reveal (no person)
-
-```python
-def create_premium_reveal(product_name, product_image_path=None):
-    """
-    Dark-void aesthetic with text narrative overlays
-    """
-    prompt = f"""
-    {product_name} floating in dark void, dramatic spotlight.
-    Text overlay: "Introducing {product_name}".
-    Slow 360° rotation. Mist effect, subtle glow.
-    Text: "Engineered for [key benefit]".
-    Hero shot, product center frame. Premium minimal aesthetic.
-    """
-    
-    payload = {
-        'model': 'seedance-2',
-        'prompt': prompt,
-        'duration': 10,
-        'style': 'premium-reveal',
-        'aspectRatio': '1:1'
-    }
-    
-    # Optional: add product reference image
-    if product_image_path:
-        import base64
-        with open(product_image_path, 'rb') as f:
-            img_b64 = base64.b64encode(f.read()).decode()
-        payload['referenceImages'] = [img_b64]
-    
-    # Same polling pattern as above...
-```
-
-**Seedance 2.0 shot styles:** `ugc`, `premium-reveal`, `product-hero`, `studio-lookbook`, `feature-walkthrough`
-
-See prompt library at `skills/arcads-external-api/prompting/prompt-library/seedance-2-*.md`
-
-### 2. Image-to-Video (Veo 3.1 with Start Frame)
-
-**Best for:** Animating UGC stills into videos with dialogue
-
-```python
-import base64
-
-def animate_still_to_video(image_path, dialogue_script, duration=8):
-    """
-    Veo 3.1 with startFrame — animate a Nano Banana still
-    """
-    headers = {
-        'Authorization': f'Bearer {API_KEY}',
-        'Content-Type': 'application/json'
-    }
-    
-    # Load image as base64
-    with open(image_path, 'rb') as f:
-        start_frame_b64 = base64.b64encode(f.read()).decode()
-    
-    payload = {
-        'model': 'veo-3.1',
-        'startFrame': start_frame_b64,
-        'prompt': f"""
-        Natural human motion from starting frame.
-        Person speaks: "{dialogue_script}"
-        Lip-sync to dialogue, subtle head movements, authentic delivery.
-        """,
-        'duration': duration,
-        'aspectRatio': '9:16'
-    }
-    
-    response = requests.post(
-        f'{BASE_URL}/v1/veo/animate',
-        headers=headers,
-        json=payload
-    )
-    
-    result = response.json()
-    
-    # Poll until complete (same pattern)
-    # ...
-    return result['id']
-```
-
-**MANDATORY dialogue gate:** Veo 3.1 with dialogue requires separate user confirmation before generation starts.
-
-### 3. AI Influencer Character Sheet (Nano Banana 2)
-
-**Best for:** Creating reusable AI person libraries
-
-```python
-def create_ai_influencer(description, name):
-    """
-    Two-pass workflow:
-    1. Generate hero portrait
-    2. Generate 9 additional angles with hero as reference
-    """
-    headers = {
-        'Authorization': f'Bearer {API_KEY}',
-        'Content-Type': 'application/json'
-    }
-    
-    # Phase 1: Hero portrait
-    hero_prompt = f"""
-    Front-facing portrait. {description}
-    Natural lighting, eye contact, slight smile.
-    Photoreal skin texture, authentic appearance.
-    High detail, commercial photography quality.
-    """
-    
-    hero_payload = {
-        'model': 'nano-banana-2',
-        'prompt': hero_prompt,
-        'aspectRatio': '1:1'
-    }
-    
-    hero_resp = requests.post(
-        f'{BASE_URL}/v1/images/generate',
-        headers=headers,
-        json=hero_payload
-    )
-    
-    hero_result = hero_resp.json()
-    hero_id = hero_result['id']
-    
-    # Poll for hero completion
-    while True:
-        status_resp = requests.get(
-            f'{BASE_URL}/v1/images/{hero_id}',
-            headers=headers
-        )
-        status = status_resp.json()
-        
-        if status['status'] == 'completed':
-            hero_url = status['url']
-            hero_b64 = status['imageBase64']
-            break
-        
-        time.sleep(5)
-    
-    print(f"Hero portrait: {hero_url}")
-    print("User approval required before generating additional angles...")
-    
-    # Phase 2: Generate 9 additional angles
-    angles = [
-        "3/4 view left, slight smile",
-        "3/4 view right, thoughtful expression",
-        "Profile left side, natural lighting",
-        "Profile right side, soft focus background",
-        "Close-up face, direct eye contact",
-        "Mid-distance shot, arms crossed",
-        "Looking away, candid moment",
-        "Laughing naturally, genuine expression",
-        "Serious expression, professional demeanor"
-    ]
-    
-    character_sheet = {'hero': hero_url, 'angles': {}}
-    
-    for i, angle_desc in enumerate(angles):
-        angle_prompt = f"{description}. {angle_desc}. Match likeness and style from reference."
-        
-        angle_payload = {
-            'model': 'nano-banana-2',
-            'prompt': angle_prompt,
-            'referenceImages': [hero_b64],  # Use hero as reference
-            'aspectRatio': '1:1'
-        }
-        
-        angle_resp = requests.post(
-            f'{BASE_URL}/v1/images/generate',
-            headers=headers,
-            json=angle_payload
-        )
-        
-        # Poll and collect
-        # ...
-        character_sheet['angles'][f'angle_{i+1}'] = angle_url
-    
-    # Save to references/influencers/
-    output_dir = f'references/influencers/{name}'
-    os.makedirs(output_dir, exist_ok=True)
-    
-    with open(f'{output_dir}/manifest.json', 'w') as f:
-        json.dump(character_sheet, f, indent=2)
-    
-    return character_sheet
-```
-
-### 4. UGC Product Selfie Still
-
-**Best for:** Authentic-looking iPhone selfie frames with AI influencer + product
-
-```python
-def generate_ugc_selfie(influencer_name, product_image_path, scene_description):
-    """
-    Combine character reference + product photo + UGC aesthetic references
-    """
-    # Load influencer hero
-    with open(f'references/influencers/{influencer_name}/manifest.json') as f:
-        influencer_data = json.load(f)
-    
-    hero_path = influencer_data['hero']
-    
-    # Load product image
-    with open(product_image_path, 'rb') as f:
-        product_b64 = base64.b64encode(f.read()).decode()
-    
-    # Load UGC aesthetic references
-    ugc_ref_dir = 'references/aesthetics/ugc-selfie/'
-    style_refs = []
-    for ref_file in os.listdir(ugc_ref_dir):
-        if ref_file.endswith(('.jpg', '.png')):
-            with open(os.path.join(ugc_ref_dir, ref_file), 'rb') as f:
-                style_refs.append(base64.b64encode(f.read()).decode())
-    
-    prompt = f"""
-    iPhone selfie frame grab. {scene_description}
-    Person holds product naturally, casual selfie angle.
-    Soft skin realism, natural blemishes, authentic lighting.
-    Slight camera grain, real iPhone aesthetic.
-    Product visible but organic to scene.
-    """
-    
-    payload = {
-        'model': 'nano-banana-2',
-        'prompt': prompt,
-        'referenceImages': style_refs[:3] + [product_b64],  # Max 5 total
-        'aspectRatio': '9:16'
-    }
-    
-    # Generate and poll...
-```
-
-**Nano Banana model variants:**
-- `nano-banana-2` — default (Gemini 3 Flash Image)
-- `nano-banana` — **Nano Banana Pro** (Gemini 3 Pro Image, tighter identity lock)
-- `nano-banana-edit` — inpainting/editing
-
-### 5. Sora 2 Text-to-Video (Long-form)
-
-**Best for:** Up to 20-second narrative videos
-
-```python
-def generate_sora_video(scene_description, duration=16):
-    """
-    Sora 2 for longer-duration text-to-video
-    Auto-calculate duration from script word count (~2.5 words/sec)
-    """
-    word_count = len(scene_description.split())
-    estimated_duration = min(20, max(5, word_count / 2.5))
-    
-    payload = {
-        'model': 'sora-2',
-        'prompt': scene_description,
-        'duration': int(estimated_duration),
-        'aspectRatio': '16:9'
-    }
-    
-    headers = {
-        'Authorization': f'Bearer {API_KEY}',
-        'Content-Type': 'application/json'
-    }
-    
-    response = requests.post(
-        f'{BASE_URL}/v1/sora2/generate',
-        headers=headers,
-        json=payload
-    )
-    
-    # Poll pattern...
-```
-
-**Sora 2 remix:** Use `POST /v1/sora2/remix/video` with existing video ID to remix an asset.
-
-### 6. B-roll & Scene Generation (Kling 3.0)
-
-```python
-def generate_broll(scene_description, duration=5):
-    """
-    Kling 3.0 b-roll clips
-    """
-    payload = {
-        'model': 'kling-3.0',
-        'prompt': scene_description,
-        'duration': duration,
-        'aspectRatio': '16:9'
-    }
-    
-    response = requests.post(
-        f'{BASE_URL}/v1/b-roll',
-        headers={'Authorization': f'Bearer {API_KEY}'},
-        json=payload
-    )
-    
-    # Poll...
-
-def generate_scene(environment_description):
-    """
-    Kling 3.0 environmental scenes
-    """
-    payload = {
-        'model': 'kling-3.0',
-        'prompt': environment_description,
-        'duration': 8
-    }
-    
-    response = requests.post(
-        f'{BASE_URL}/v1/scene',
-        headers={'Authorization': f'Bearer {API_KEY}'},
-        json=payload
-    )
-    
-    # Poll...
-```
-
-### 7. Static Meta Image Ads (37-Template Library)
-
-**Three generation skills:**
-1. **`chatgpt-image-ad`** — Typography-heavy, UI mimicry (gpt-image-2)
-2. **`nano-banana-image-ad`** — Photoreal, lifestyle, multi-reference (Nano Banana 2/Pro)
-3. **`image-ad-clone`** — Reverse-engineer existing ads into templates
-
-#### Generate Apple Notes-style ad
-
-```python
-def generate_apple_notes_ad(product_name, benefit_list):
-    """
-    ChatGPT Image 2 backend (typography-focused)
-    """
-    prompt = f"""
-    iPhone Notes app screenshot.
-    Title: "{product_name} — why I switched"
-    Bulleted list:
-    {chr(10).join(f'• {b}' for b in benefit_list)}
-    
-    iOS system font, cream background, realistic UI elements.
-    Subtle screen glare, authentic iPhone screenshot aesthetic.
-    """
-    
-    payload = {
-        'model': 'gpt-image-2',
-        'prompt': prompt,
-        'aspectRatio': '1:1',
-        'templateId': 'apple-notes-list'  # From library
-    }
-    
-    response = requests.post(
-        f'{BASE_URL}/v1/images/generate',
-        headers={'Authorization': f'Bearer {API_KEY}'},
-        json=payload
-    )
-    
-    # Poll...
-```
-
-#### Generate Forbes editorial ad
-
-```python
-def generate_forbes_editorial(product_name, headline):
-    """
-    Nano Banana 2 backend (photoreal lifestyle)
-    """
-    prompt = f"""
-    Forbes magazine editorial layout.
-    Hero image: {product_name} in premium setting, editorial photography.
-    Headline: "{headline}"
-    Forbes logo top, article preview text, professional layout.
-    High-end commercial photography aesthetic.
-    """
-    
-    payload = {
-        'model': 'nano-banana-2',
-        'prompt': prompt,
-        'aspectRatio': '4:5',
-        'templateId': 'forbes-editorial'
-    }
-    
-    # Same pattern...
-```
-
-**37 template IDs:** `apple-notes-list`, `forbes-editorial`, `google-search-fake`, `comparison-table`, `sticky-note-flatlay`, `slack-thread-fake`, `chatgpt-conversation`, `imessage-screenshot`, `magazine-cover`, `billboard-outdoor`, `museum-exhibit`, `weather-forecast-ui`, `scratch-off-ticket`, `founder-letter`, `dating-app-card`, and more.
-
-See `shared/skills/image-ad-prompting/OVERVIEW.md` for:
-- Backend decision tree (which model for which template)
-- Aspect-ratio compatibility matrix
-- Standard generate/clone workflows
-
-### 8. Clone Existing Ad as Template
-
-```python
-def clone_image_ad(reference_image_path, backend='auto'):
-    """
-    Reverse-engineer existing ad into reusable template
-    Phase 1: Detect structure → Phase 8: Cross-validate
-    """
-    with open(reference_image_path, 'rb') as f:
-        ref_b64 = base64.b64encode(f.read()).decode()
-    
-    # Phase 1: Structure detection
-    analyze_payload = {
-        'imageBase64': ref_b64,
-        'backend': backend  # 'gpt-image-2', 'nano-banana-2', or 'auto'
-    }
-    
-    analyze_resp = requests.post(
-        f'{BASE_URL}/v1/image-ad/clone/analyze',
-        headers={'Authorization': f'Bearer {API_KEY}'},
-        json=analyze_payload
-    )
-    
-    structure = analyze_resp.json()
-    
-    # Agent extracts: layout type, color scheme, typography, composition
-    template_id = structure['suggestedTemplateId']
-    
-    # Phase 8: Cross-validate against other backend
-    # ...
-    
-    return template_id
-```
-
-## Multi-Step Animated Ad Pipelines
-
-### 9. Pixar-Style 3D Animated Ad
-
-```bash
-#!/bin/bash
-# shared/skills/pixar-style-ad/scripts/generate.sh
-
-set -e
-
-PRODUCT=$1
-STORY_ARC=$2  # 8-beat JSON file
-
-# Step 1: Lock cast sheet (ChatGPT Image 2 character designs)
-echo "Generating Pixar character designs..."
-python3 shared/skills/pixar-style-ad/scripts/lock_cast.py "$PRODUCT"
-
-# Step 2: Generate storyboard stills (sequential, prior frame as ref)
-echo "Creating storyboard..."
-python3 shared/skills/pixar-style-ad/scripts/storyboard.py "$STORY_ARC"
-
-# Step 3: Seedance 2.0 image-to-video per beat
-echo "Animating beats..."
-for beat in $(seq 1 8); do
-    python3 shared/skills/pixar-style-ad/scripts/animate_beat.py "$beat"
-done
-
-# Step 4: Stitch with ffmpeg + burn captions
-echo "Stitching final video..."
-ffmpeg -f concat -safe 0 -i beats_concat.txt -c copy pixar_ad_raw.mp4
-
-# Step 5: Captions (hyperframes + whisper)
-npx hyperframes --input pixar_ad_raw.mp4 --output pixar_ad_final.mp4 \
-    --transcript "$(python3 -c "import whisper; print(whisper.load_model('medium.en').transcribe('pixar_ad_raw.mp4')['text'])")"
-
-echo "Done: pixar_ad_final.mp4"
-```
-
-**Key dependencies:** `ffmpeg`, `jq`, `npx hyperframes`, `whisper`
-
-See `shared/skills/pixar-style-ad/prompting/guide.md` for 8-beat story arc structure.
-
-### 10. Claymation / Aardman-Style Ad
-
-```bash
-#!/bin/bash
-# shared/skills/claymation-ad/scripts/generate.sh
-
-set -e
-
-PRODUCT=$1
-NARRATOR_SCRIPT=$2
-
-# Same backbone as Pixar with clay textures
-# ChatGPT Image 2 storyboard → Seedance 2.0 i2v
-
-# Step 4: Stitch with stop-motion judder
-ffmpeg -f concat -safe 0 -i beats_concat.txt \
-    -vf "fps=12,fps=24" \  # Stop-motion judder effect
-    -c:v libx264 claymation_ad.mp4
-
-# Mix external voiceover (ElevenLabs, etc.)
-ffmpeg -i claymation_ad.mp4 -i narrator_vo.mp3 \
-    -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 \
-    claymation_ad_final.mp4
-```
-
-See `shared/skills/claymation-ad/prompting/guide.md`.
-
-### 11. Burn Captions onto Finished Video
-
-```python
-import subprocess
-import json
-
-def burn_captions(video_path, output_path):
-    """
-    Out-of-band post-step: Whisper transcription → HyperFrames render
-    Works on any source (Pixar, UGC, B-roll, etc.)
-    """
-    # Step 1: Transcribe with Whisper
-    import whisper
-    model = whisper.load_model("medium.en")
-    result = model.transcribe(video_path)
-    
-    # Step 2: Group word-level into reading phrases
-    transcript_json = json.dumps(result['segments'])
-    
-    # Step 3: HyperFrames render
-    subprocess.run([
-        'npx', 'hyperframes',
-        '--input', video_path,
-        '--output', output_path,
-        '--transcript', transcript_json,
-        '--style', 'modern-bold'
-    ], check=True)
-    
-    print(f"Captions burned: {output_path}")
-```
-
-## Configuration
-
-### Workspace files
-
-- **`MASTER_CONTEXT.md`** — Personal workspace file (product info, brand voice, active campaigns)
-- **`references/influencers/`** — AI character libraries (10-image sets per person)
-- **`references/aesthetics/`** — Style reference images (UGC selfie, premium, etc.)
-- **`references/products/`** — Product photography for multi-step workflows
-
-### Cost controls
-
-The agent confirms generation costs before API calls:
-
-```
-💰 Cost estimate: $0.45 (Seedance 2.0, 12s, 9:16)
-Proceed? (y/n):
-```
-
-Typical costs (as of 2026):
-- Seedance 2.0: $0.03–0.05/sec
-- Veo 3.1: $0.08/sec
-- Nano Banana 2: $0.02/image
-- ChatGPT Image 2: $0.04/image
-
-## Common Patterns
-
-### Pattern 1: UGC Still → Video Pipeline
-
-```python
-# 1. Generate UGC selfie still (Nano Banana 2)
-still_url = generate_ugc_selfie('Sofia', 'product.jpg', 'bedroom, golden hour')
-
-# 2. User approves still
-
-# 3. Animate with Veo 3.1 (start frame + dialogue)
-video_url = animate_still_to_video(still_url, "This changed my morning routine", duration=8)
-```
-
-### Pattern 2: Multi-Reference Character Lock
-
-```python
-# Use 5 references (max) for tight identity lock
-character_refs = [
-    'references/influencers/Alex/hero.jpg',
-    'references/influencers/Alex/angle_1.jpg',
-    'references/influencers/Alex/angle_2.jpg',
-    'references/aesthetics/lighting/golden-hour-1.jpg',
-    'product.jpg'
-]
-
-ref_b64_list = []
-for ref in character_refs:
-    with open(ref, 'rb') as f:
-        ref_b64_list.append(base64.b64encode(f.read()).decode())
-
-payload = {
-    'model': 'nano-banana',  # Pro for tighter lock
-    'prompt': prompt,
-    'referenceImages': ref_b64_list
+headers = {
+    'x-api-key': API_KEY,
+    'Content-Type': 'application/json'
 }
+
+def make_arcads_request(endpoint, payload):
+    """Standard Arcads API request with error handling."""
+    response = requests.post(f'{BASE_URL}{endpoint}', 
+                            json=payload, 
+                            headers=headers)
+    response.raise_for_status()
+    return response.json()
 ```
 
-### Pattern 3: Batch Parallel Firing
+### Job Polling Pattern
 
-```python
-import concurrent.futures
-
-def batch_generate_variations(base_prompt, variations):
-    """
-    Fire 6 parallel requests (YouTube thumbnail variations, A/B test stills, etc.)
-    """
-    def generate_single(variation_text):
-        payload = {
-            'model': 'nano-banana-2',
-            'prompt': f"{base_prompt} {variation_text}",
-            'aspectRatio': '16:9'
-        }
-        response = requests.post(
-            f'{BASE_URL}/v1/images/generate',
-            headers={'Authorization': f'Bearer {API_KEY}'},
-            json=payload
-        )
-        return response.json()['id']
-    
-    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
-        futures = {executor.submit(generate_single, v): v for v in variations}
-        
-        results = {}
-        for future in concurrent.futures.as_completed(futures):
-            variation = futures[future]
-            gen_id = future.result()
-            results[variation] = gen_id
-    
-    return results
-```
-
-## Troubleshooting
-
-### Issue: "Authorization failed"
-
-**Cause:** Invalid or missing API key
-
-**Fix:**
-```bash
-# Verify .env exists and has correct key
-cat .env | grep ARCADS_API_KEY
-
-# Re-run setup if needed
-./scripts/setup.sh
-```
-
-### Issue: Generation stuck in "pending" status
-
-**Cause:** Model overloaded or request timeout
-
-**Fix:**
-- Poll interval: Wait 10–15 seconds between status checks (not 5s)
-- Check status manually: `GET /v1/videos/{id}` or `/v1/images/{id}`
-- Timeout: Set max polling duration (5 minutes for video, 2 minutes for image)
+Most video/image generation is async. Standard polling:
 
 ```python
 import time
 
-def poll_with_timeout(endpoint, timeout=300):
-    start = time.time()
-    while time.time() - start < timeout:
-        status = requests.get(endpoint, headers={'Authorization': f'Bearer {API_KEY}'}).json()
-        if status['status'] in ['completed', 'failed']:
-            return status
-        time.sleep(10)
-    raise TimeoutError(f"Generation timeout after {timeout}s")
+def poll_job(job_id, endpoint='/v1/job/status'):
+    """Poll job until complete or failed."""
+    while True:
+        response = requests.get(
+            f'{BASE_URL}{endpoint}/{job_id}',
+            headers=headers
+        )
+        data = response.json()
+        status = data.get('status')
+        
+        if status == 'completed':
+            return data.get('output_url')
+        elif status in ['failed', 'error']:
+            raise Exception(f"Job failed: {data.get('error')}")
+        
+        print(f"Status: {status}... waiting 5s")
+        time.sleep(5)
 ```
 
-### Issue: "Reference image limit exceeded"
+## Video Generation
 
-**Cause:** More than 5 `referenceImages` in payload
+### Seedance 2.0 (Flagship Model)
 
-**Fix:**
+**Best for**: UGC-style ads, product reveals, feature demos (4–15s clips)
+
+#### UGC Selfie-Style Product Review
+
 ```python
-# Max 5 references per request
-payload['referenceImages'] = ref_list[:5]
+# 9-layer UGC formula for Seedance 2.0
+payload = {
+    "model": "seedance-2",
+    "prompt": """
+    A 12-second UGC video. Scene: bright kitchen, natural daylight. 
+    Woman in casual tee holds [product]. iPhone selfie camera angle.
+    
+    She looks directly at camera: "I used to buy [competitor] until I tried this."
+    Holds product closer. Natural eye-contact breaks. Casual delivery.
+    Subtle background motion (steam from coffee mug). 
+    Authentic imperfect framing. No polish.
+    """,
+    "duration": 12,
+    "aspectRatio": "9:16",
+    "audio": True
+}
+
+response = make_arcads_request('/v1/seedance-2/generate', payload)
+job_id = response['jobId']
+video_url = poll_job(job_id)
+print(f"Video ready: {video_url}")
 ```
 
-### Issue: Veo 3.1 dialogue not matching script
+**Prompt templates** (5 formulas included):
+- UGC selfie (`seedance-2-ugc.md`)
+- Premium reveal (`seedance-2-premium-reveal.md`)
+- Product hero w/ effects (`seedance-2-product-hero.md`)
+- Studio lookbook (`seedance-2-studio-lookbook.md`)
+- Feature walkthrough (`seedance-2-feature-walkthrough.md`)
 
-**Cause:** Skipped MANDATORY dialogue confirmation gate
+#### With Reference Image (Image-to-Video)
 
-**Fix:**
 ```python
-# Before Veo 3.1 generation with dialogue:
-print(f"Dialogue script: '{dialogue_text}'")
-confirm = input("Confirm dialogue before generating? (y/n): ")
-if confirm.lower() != 'y':
-    raise Exception("Dialogue confirmation required")
+import base64
+
+def encode_image(image_path):
+    with open(image_path, 'rb') as f:
+        return base64.b64encode(f.read()).decode('utf-8')
+
+payload = {
+    "model": "seedance-2",
+    "prompt": "Animate this product shot with water splash and slow rotation",
+    "duration": 8,
+    "startFrame": encode_image('product.jpg'),
+    "aspectRatio": "1:1"
+}
+
+response = make_arcads_request('/v1/seedance-2/generate', payload)
 ```
 
-### Issue: Pixar/claymation pipeline fails at stitch step
+### Veo 3.1 (Still → Video Animation)
 
-**Cause:** Missing `ffmpeg` or malformed concat file
+**Best for**: Animating Nano Banana stills into video with dialogue
 
-**Fix:**
+```python
+# Step 1: Generate still with Nano Banana (see Image Generation)
+# Step 2: Animate with Veo 3.1
+
+payload = {
+    "prompt": """
+    Natural human motion. Woman smiles, gestures with hand holding product.
+    She says: "This changed everything for me."
+    Authentic UGC delivery. Slight head tilt. Eye contact with camera.
+    """,
+    "startFrame": encode_image('ugc_still.jpg'),
+    "duration": 8,
+    "aspectRatio": "9:16"
+}
+
+response = make_arcads_request('/v1/veo-3.1/generate', payload)
+job_id = response['jobId']
+video_url = poll_job(job_id)
+```
+
+**MANDATORY dialogue gate**: Always confirm dialogue separately before generating Veo videos.
+
+### Sora 2 (Long-Form Text-to-Video)
+
+**Best for**: Longer clips (up to 20s), cinematic scenes
+
+```python
+payload = {
+    "prompt": "Wide shot of a modern kitchen. Golden hour light streams through window. Product sits on marble counter. Camera slowly dollies forward.",
+    "duration": 16,  # Auto-calculated from word count (~2.5 words/sec)
+    "aspectRatio": "16:9",
+    "styleReference": encode_image('style_ref.jpg')  # Optional
+}
+
+response = make_arcads_request('/v1/sora2/generate', payload)
+```
+
+#### Sora 2 Remix
+
+```python
+payload = {
+    "videoUrl": "https://arcads.ai/output/original_video.mp4",
+    "prompt": "Same scene but at sunset with warmer tones"
+}
+
+response = make_arcads_request('/v1/sora2/remix/video', payload)
+```
+
+### Kling 3.0 (B-Roll & Scenes)
+
+**Best for**: Quick b-roll clips, environmental shots
+
+```python
+# B-roll endpoint
+payload = {
+    "prompt": "Close-up of hands pouring coffee. Steam rising. Soft morning light.",
+    "duration": 5
+}
+response = make_arcads_request('/v1/b-roll', payload)
+
+# Scene endpoint
+payload = {
+    "prompt": "Modern minimalist living room. Large windows. Afternoon light.",
+    "duration": 8
+}
+response = make_arcads_request('/v1/scene', payload)
+```
+
+### Other Video Models
+
+```python
+# Grok Video
+payload = {
+    "model": "grok-video",
+    "prompt": "Product floating in space with particle effects",
+    "duration": 10
+}
+response = make_arcads_request('/v2/videos/generate', payload)
+
+# OmniHuman (Talking Avatar)
+payload = {
+    "avatarImage": encode_image('avatar.jpg'),
+    "script": "Hi, I'm Sarah and I want to tell you about this amazing product.",
+    "duration": 12
+}
+response = make_arcads_request('/v1/omnihuman', payload)
+
+# Audio-Driven (Lip Sync)
+payload = {
+    "videoUrl": "https://example.com/base_video.mp4",
+    "audioFile": encode_image('voiceover.mp3')
+}
+response = make_arcads_request('/v1/audio-driven', payload)
+```
+
+## Image Generation
+
+### Nano Banana (Photoreal Product Images)
+
+**Models**: `nano-banana-2` (default), `nano-banana` (Pro/Gemini 3), `nano-banana-edit` (inpainting)
+
+#### UGC Product Selfie Still
+
+```python
+payload = {
+    "model": "nano-banana-2",
+    "prompt": """
+    iPhone selfie of 22-year-old woman in bedroom. Natural lighting.
+    She holds [product] near her face, smiling genuinely.
+    Freckles visible. Hair slightly messy. Authentic UGC aesthetic.
+    Phone camera POV. Slight blur on edges. Real skin texture.
+    """,
+    "aspectRatio": "9:16",
+    "referenceImages": [
+        encode_image('references/influencers/sofia_hero.jpg'),
+        encode_image('references/products/product_angle1.jpg'),
+        encode_image('references/aesthetics/ugc-selfie/style1.jpg')
+    ]
+}
+
+response = make_arcads_request('/v1/nano-banana/generate', payload)
+job_id = response['jobId']
+image_url = poll_job(job_id, endpoint='/v1/job/status')
+```
+
+#### Create AI Influencer (10-Image Character Sheet)
+
+```python
+def create_influencer(description):
+    """Generate 10-angle character sheet for reuse."""
+    
+    # Step 1: Hero front portrait
+    hero_payload = {
+        "model": "nano-banana-2",
+        "prompt": f"""
+        Front-facing portrait. {description}
+        Studio lighting. Direct eye contact. Neutral expression.
+        High detail on facial features. Clean background.
+        """,
+        "aspectRatio": "1:1"
+    }
+    
+    hero_response = make_arcads_request('/v1/nano-banana/generate', hero_payload)
+    hero_url = poll_job(hero_response['jobId'])
+    
+    # Download hero for reference
+    hero_img = requests.get(hero_url).content
+    with open('hero.jpg', 'wb') as f:
+        f.write(hero_img)
+    
+    hero_base64 = encode_image('hero.jpg')
+    
+    # Step 2: Generate 9 additional angles
+    angles = [
+        "3/4 view looking left",
+        "3/4 view looking right",
+        "Profile view left side",
+        "Profile view right side",
+        "Close-up of face",
+        "Smiling expression",
+        "Thoughtful expression",
+        "Upper body shot",
+        "Full body standing"
+    ]
+    
+    for i, angle in enumerate(angles):
+        payload = {
+            "model": "nano-banana-2",
+            "prompt": f"{description}. {angle}. Same person, consistent features.",
+            "aspectRatio": "1:1",
+            "referenceImages": [hero_base64]
+        }
+        response = make_arcads_request('/v1/nano-banana/generate', payload)
+        img_url = poll_job(response['jobId'])
+        
+        # Save to references/influencers/
+        img_data = requests.get(img_url).content
+        with open(f'references/influencers/char_{i+1}.jpg', 'wb') as f:
+            f.write(img_data)
+    
+    return hero_url
+
+# Usage
+create_influencer("22-year-old woman with freckles, golden hair, green eyes")
+```
+
+#### Nano Banana Pro (Higher Fidelity)
+
+```python
+payload = {
+    "model": "nano-banana",  # Pro model (Gemini 3 Pro Image)
+    "prompt": "Studio product shot with precise lighting setup",
+    "aspectRatio": "1:1",
+    "referenceImages": [encode_image('ref1.jpg'), encode_image('ref2.jpg')]
+}
+```
+
+### ChatGPT Image 2 (Typography & UI-Heavy)
+
+**Best for**: Text-heavy ads, UI mockups, editorial layouts
+
+```python
+payload = {
+    "model": "gpt-image-2",
+    "prompt": """
+    Apple Notes style ad. iPhone notes app interface.
+    Title: "Why I switched to [Product]"
+    Bulleted list with 5 benefits. Clean iOS typography.
+    Screenshot aesthetic. Realistic app chrome.
+    """,
+    "aspectRatio": "9:16"
+}
+
+response = make_arcads_request('/v1/chatgpt-image/generate', payload)
+```
+
+## Static Meta Image Ad Library (37 Templates)
+
+### Three-Skill Family
+
+**Skills included**:
+- `chatgpt-image-ad` — Typography/UI-heavy (GPT Image 2 backend)
+- `nano-banana-image-ad` — Photoreal/lifestyle (Nano Banana backend)
+- `image-ad-clone` — Reverse-engineer existing ads into templates
+
+### Template Examples
+
+```python
+# Apple Notes List Ad
+payload = {
+    "template": "apple-notes-list",
+    "product": "Acme Protein Powder",
+    "headline": "5 reasons I ditched [competitor]",
+    "bullets": [
+        "30g protein per serving",
+        "No artificial sweeteners",
+        "Mixes instantly",
+        "Actually tastes good",
+        "Costs 40% less"
+    ],
+    "aspectRatio": "9:16"
+}
+
+# Forbes Editorial Hero
+payload = {
+    "template": "forbes-editorial",
+    "headline": "The $2B Startup Disrupting [Industry]",
+    "subhead": "How Acme's founder built a unicorn in 18 months",
+    "productImage": encode_image('product.jpg'),
+    "aspectRatio": "1:1"
+}
+
+# Comparison Table
+payload = {
+    "template": "comparison-table",
+    "columns": ["Us", "Competitor A", "Competitor B"],
+    "rows": [
+        {"feature": "Price", "values": ["$29", "$49", "$59"]},
+        {"feature": "Servings", "values": ["30", "20", "25"]},
+        {"feature": "Protein", "values": ["30g", "25g", "28g"]}
+    ],
+    "aspectRatio": "1:1"
+}
+```
+
+### Clone Existing Ad
+
+```python
+def clone_ad_template(reference_image_path):
+    """Reverse-engineer ad into reusable template."""
+    
+    payload = {
+        "action": "analyze",
+        "referenceImage": encode_image(reference_image_path)
+    }
+    
+    response = make_arcads_request('/v1/image-ad-clone', payload)
+    
+    # Returns template structure
+    template = response['template']
+    print(f"Detected template: {template['type']}")
+    print(f"Layout: {template['layout']}")
+    print(f"Typography: {template['typography']}")
+    
+    # Generate new version with your content
+    payload = {
+        "action": "generate",
+        "template": template,
+        "content": {
+            "headline": "Your New Headline",
+            "body": "Your body copy"
+        },
+        "backend": "nano-banana-2"  # or "gpt-image-2"
+    }
+    
+    new_ad = make_arcads_request('/v1/image-ad-clone', payload)
+    return poll_job(new_ad['jobId'])
+```
+
+### Backend Selection Matrix
+
+| Template Type | Recommended Backend | Aspect Ratios |
+|---------------|-------------------|---------------|
+| Apple Notes, UI mockups | `gpt-image-2` | 9:16, 1:1 |
+| Photoreal lifestyle | `nano-banana-2` | All |
+| Editorial hero | `nano-banana` (Pro) | 1:1, 4:5 |
+| Comparison tables | `gpt-image-2` | 1:1 |
+| Sticky-note flatlay | `nano-banana-2` | 4:5, 1:1 |
+
+Read `shared/skills/image-ad-prompting/OVERVIEW.md` for full template library and decision tree.
+
+## Multi-Step Animated Ad Pipelines
+
+### Pixar-Style 3D Animated Ad
+
+**Pipeline**: Cast sheet → ChatGPT Image 2 storyboard → Seedance 2.0 i2v → ffmpeg stitch + captions
+
 ```bash
-# Verify ffmpeg installed
-which ffmpeg
-
-# Check concat file format
-cat beats_concat.txt
-# Should be:
-# file 'beat_1.mp4'
-# file 'beat_2.mp4'
-# ...
-
-# Manually test stitch
-ffmpeg -f concat -safe 0 -i beats_concat.txt -c copy test_output.mp4
+# Full pipeline via bash script
+./shared/skills/pixar-style-ad/scripts/generate.sh \
+  --product "Acme Coffee" \
+  --story "Tired bean meets energizing coffee bag, transforms into superhero bean" \
+  --duration 32 \
+  --output output/pixar-ad.mp4
 ```
 
-### Issue: Caption burn-in fails
-
-**Cause:** Missing `npx hyperframes` or `whisper`
-
-**Fix:**
-```bash
-# Install Node.js (includes npx)
-brew install node
-
-# Install Whisper
-pip3 install openai-whisper
-
-# Test manually
-npx hyperframes --version
-python3 -c "import whisper; print(whisper.__version__)"
-```
-
-### Issue: Image ad template not rendering correctly
-
-**Cause:** Wrong backend for template type
-
-**Fix:** Check `shared/skills/image-ad-prompting/OVERVIEW.md` decision tree:
-
-- Typography-heavy (Notes, ChatGPT conversation, Slack) → `gpt-image-2`
-- Photoreal lifestyle (Forbes, magazine, billboard) → `nano-banana-2`
-- UI mockups with text → `gpt-image-2`
+**Python workflow**:
 
 ```python
-# Use correct model per template
-if template_id in ['apple-notes-list', 'chatgpt-conversation', 'slack-thread-fake']:
-    model = 'gpt-image-2'
-else:
-    model = 'nano-banana-2'
+def generate_pixar_ad(product_name, story_arc, duration=32):
+    """Generate Pixar-style 8-beat animated ad."""
+    
+    beats = 8
+    seconds_per_beat = duration / beats
+    
+    # Step 1: Lock cast sheet
+    cast_payload = {
+        "model": "gpt-image-2",
+        "prompt": f"""
+        Character design sheet for Pixar-style 3D animation.
+        Product: {product_name}
+        Characters: Anthropomorphized {product_name} mascot.
+        Front, 3/4, side views. Expressive features. Pixar aesthetic.
+        """,
+        "aspectRatio": "16:9"
+    }
+    cast_response = make_arcads_request('/v1/chatgpt-image/generate', cast_payload)
+    cast_url = poll_job(cast_response['jobId'])
+    cast_base64 = encode_image(download_file(cast_url, 'cast.jpg'))
+    
+    # Step 2: Generate 8-beat storyboard stills
+    storyboard = []
+    prev_frame = None
+    
+    for beat in range(1, beats + 1):
+        prompt = f"""
+        Pixar-style 3D render. Beat {beat} of {beats}.
+        {story_arc}. Scene: [describe beat {beat}].
+        Consistent character from cast sheet. Pixar lighting and textures.
+        """
+        
+        refs = [cast_base64]
+        if prev_frame:
+            refs.append(prev_frame)
+        
+        payload = {
+            "model": "gpt-image-2",
+            "prompt": prompt,
+            "aspectRatio": "16:9",
+            "referenceImages": refs[:5]  # Max 5 references
+        }
+        
+        response = make_arcads_request('/v1/chatgpt-image/generate', payload)
+        still_url = poll_job(response['jobId'])
+        still_path = download_file(still_url, f'beat_{beat}.jpg')
+        prev_frame = encode_image(still_path)
+        
+        storyboard.append(still_path)
+    
+    # Step 3: Animate each still with Seedance 2.0
+    clips = []
+    for i, still_path in enumerate(storyboard):
+        payload = {
+            "model": "seedance-2",
+            "prompt": f"Animate this Pixar scene. Subtle character motion. Pixar-quality animation.",
+            "duration": int(seconds_per_beat),
+            "startFrame": encode_image(still_path),
+            "aspectRatio": "16:9",
+            "audio": False
+        }
+        
+        response = make_arcads_request('/v1/seedance-2/generate', payload)
+        clip_url = poll_job(response['jobId'])
+        clip_path = download_file(clip_url, f'clip_{i}.mp4')
+        clips.append(clip_path)
+    
+    # Step 4: Stitch with ffmpeg
+    stitch_clips(clips, 'output/pixar_stitched.mp4')
+    
+    # Step 5: Burn captions (optional)
+    # Uses hyperframes + whisper - see Caption Workflow below
+    
+    return 'output/pixar_stitched.mp4'
+
+def stitch_clips(clips, output):
+    """Stitch clips with ffmpeg."""
+    import subprocess
+    
+    # Create concat file
+    with open('concat.txt', 'w') as f:
+        for clip in clips:
+            f.write(f"file '{clip}'\n")
+    
+    subprocess.run([
+        'ffmpeg', '-f', 'concat', '-safe', '0', 
+        '-i', 'concat.txt', '-c', 'copy', output
+    ])
 ```
 
-## Additional Resources
+### Claymation / Aardman-Style Ad
 
-- **Prompt library:** `skills/arcads-external-api/prompting/prompt-library/`
-- **Image ad templates:** `shared/skills/image-ad-prompting/OVERVIEW.md`
-- **Video walkthrough:** [YouTube tutorial by Mr. Paid Social](https://youtu.be/HHGQN9Zqaxo)
-- **API docs:** [app.arcads.ai/docs/api](https://app.arcads.ai/docs/api)
-- **Community:** [The AI Ad Alchemists Skool](https://skool.
+**Same 8-beat structure** with clay textures and stop-motion aesthetic:
+
+```python
+# Modify storyboard generation
+payload = {
+    "model": "gpt-image-2",
+    "prompt": f"""
+    Claymation character made of plasticine clay.
+    Visible sculpting marks. Aardman Animations style.
+    Scene: {beat_description}
+    Handcrafted texture. Tactile surface. Stop-motion lighting.
+    """,
+    "aspectRatio": "16:9"
+}
+
+# After stitching, add stop-motion judder
+subprocess.run([
+    'ffmpeg', '-i', 'stitched.mp4', 
+    '-vf', 'fps=12,fps=24',  # 12fps judder
+    'claymation_final.mp4'
+])
+```
+
+### Caption Burn-In Workflow
+
+**Dependencies**: `whisper`, `hyperframes` (Node.js)
+
+```python
+def burn_captions(video_path, output_path):
+    """Transcribe and burn captions onto video."""
+    import subprocess
+    import json
+    
+    # Step 1: Extract audio
+    subprocess.run([
+        'ffmpeg', '-i', video_path, 
+        '-vn', '-acodec', 'pcm_s16le', 'audio.wav'
+    ])
+    
+    # Step 2: Transcribe with Whisper
+    subprocess.run([
+        'whisper', 'audio.wav', 
+        '--model', 'medium.en', 
+        '--output_format', 'json'
+    ])
+    
+    # Step 3: Parse transcript
+    with open('audio.json') as f:
+        transcript = json.load(f)
+    
+    # Group words into reading phrases (3-5 words)
+    phrases = group_words(transcript['words'], max_words=4)
+    
+    # Step 4: Generate caption overlays with hyperframes
+    captions_config = {
+        "phrases": phrases,
+        "style": {
+            "fontFamily": "Inter",
+            "fontSize": 48,
+            "fontWeight": "bold",
+            "color": "#FFFFFF",
+            "backgroundColor": "rgba(0,0,0,0.7)",
+            "padding": 10
+        }
+    }
+    
+    with open('captions.json', 'w') as f:
+        json.dump(captions_config, f)
+    
+    subprocess.run([
+        'npx', 'hyperframes', 
+        '--input', video_path,
+        '--captions', 'captions.json',
+        '--output', output_path
+    ])
+    
+    return output_path
+
+def group_words(words, max_words=4):
+    """Group word-level transcript into reading phrases."""
+    phrases = []
+    current = []
+    
+    for word in words:
+        current.append(word)
+        if len(current) >= max_words or word['text'].endswith(('.', '!', '?')):
+            phrases.append({
+                "text": " ".join([w['text'] for w in current]),
+                "start": current[0]['start'],
+                "end": current[-1]['end']
+            })
+            current = []
+    
+    return phrases
+```
+
+## Publishing to Meta (via Meta Ad Builder Skill)
+
+**Prerequisite**: Install Meta Ad Builder dependencies:
+
+```bash
+pip install -r shared/skills/meta-ad-builder/scripts/requirements.txt
+```
+
+**Environment variables**:
+
+```bash
+META_ACCESS_TOKEN=your_meta_access_token
+META_AD_ACCOUNT_ID=act_123456789
+```
+
+### Publish Image Ad
+
+```python
+import sys
+sys.path.append('shared/skills/meta-ad-builder/scripts')
+from meta_publisher import publish_ad
+
+ad_config = {
+    "name": "UGC Selfie - Product Launch",
+    "image_path": "output/ugc_selfie.jpg",
+    "body": "I used to buy [competitor] until I tried this. 50% off today only 👇",
+    "link": "https://example.com/product",
+    "call_to_action": "SHOP_NOW",
+    "status": "PAUSED"  # Always create paused
+}
+
+ad_id = publish_ad(ad_config)
+print(f"Ad created (paused): {ad_id}")
+```
+
+### Publish Video Ad
+
+```python
+ad_config = {
+    "name": "Seedance UGC Video - Kitchen Scene",
+    "video_path": "output/seedance_ugc.mp4",
+    "body": "This is how I start my mornings now 💪",
+    "link": "https://example.com/product",
+    "call_to_action": "LEARN_MORE",
+    "status": "PAUSED"
+}
+
+ad_id = publish_ad(ad_config)
+```
+
+## Configuration Files
+
+### `.env` Structure
+
+```bash
+# Required
+ARCADS_API_KEY=your_api_key
+
+# Optional (for Meta publishing)
+META_ACCESS_TOKEN=your_token
+META_AD_ACCOUNT_ID=act_123456789
+
+# Optional (for external services)
+ELEVENLABS_API_KEY=your_elevenlabs_key
+```
+
+### `MASTER_CONTEXT.md`
+
+Personal workspace file created by setup. Track projects, campaigns, and reference assets:
+
+```markdown
+# Master Context - Arcads Workspace
+
+## Active Campaigns
+- Q1 Product Launch (UGC + Pixar combo)
+- Retargeting (static image ads)
+
+## AI Influencers
+- Sofia: 22F, freckles, golden hair (refs in `references/influencers/sofia/`)
+- Marcus: 28M, athletic, stubble (refs in `references/influencers/marcus/`)
+
+## Products
+- Acme Coffee: refs in `references/products/coffee/`
+- Acme Protein: refs in `references/products/protein/`
+
+## Validated Templates (Image Ads)
+- Apple Notes list (9:16, gpt-image-2) ✅
+- Forbes editorial (1:1, nano-banana-pro) ✅
+- Comparison table (1:1, gpt-image-2) ✅
+```
+
+## Common Patterns
+
+### Pattern 1: Still → Video (Two-Step UGC)
+
+```python
+def ugc_still_to_video(influencer_refs, product_ref, script):
+    """Generate UGC still → animate to video."""
+    
+    # Step 1: Generate still
+    still_payload = {
+        "model": "nano-banana-2",
+        "prompt": f"""
+        iPhone selfie. Woman in kitchen holding product.
+        Natural lighting. Authentic UGC aesthetic.
+        """,
+        "aspectRatio": "9:16",
+        "referenceImages": influencer_refs + [product_ref]
+    }
+    
+    still_response = make_arcads_request('/v1/nano-banana/generate', still_payload)
+    still_url = poll_job(still_response['jobId'])
+    still_base64 = encode_image(download_file(still_url, 'still.jpg'))
+    
+    # Step 2: Animate with Veo 3.1
+    video_payload = {
+        "prompt": f"""
+        Natural motion. Woman smiles, gestures with product.
+        She says: "{script}"
+        Authentic delivery. Slight head movement. Eye contact.
+        """,
+        "startFrame": still_base64,
+        "duration": len(script.split()) / 2.5,  # ~2.5 words/sec
+        "aspectRatio": "9:16"
+    }
+    
+    video_response = make_arcads_request('/v1/veo-3.1/generate', video_payload)
+    return poll_job(video_response['jobId'])
+```
+
+### Pattern 2: Batch Image Generation
+
+```python
+def generate_image_variants(base_prompt, variations, model="nano-banana-2"):
+    """Generate multiple image variations in parallel."""
+    
+    jobs = []
+    for variation in variations:
+        payload = {
+            "model": model,
+            "prompt": f"{base_prompt}. Variation: {variation}",
+            "aspectRatio": "1:1"
+        }
+        response = make_arcads_request('/v1/nano-banana/generate', payload)
+        jobs.append(response['jobId'])
+    
+    # Poll all jobs
+    results = []
+    for job_id in jobs:
+        url = poll_job(job_id)
+        results.append(url)
+    
+    return results
+
+# Usage
+variants = generate_image_variants(
+    "Product on marble counter",
+    ["morning light", "golden hour", "dramatic side light"]
+)
+```
+
+### Pattern 3: Reference Library Builder
+
+```python
+def build_reference_library(category, descriptions):
+    """Build organized reference library."""
+    import os
+    
+    category_path = f'references/{category}'
+    os.makedirs(category_path, exist_ok=True)
+    
+    for i, desc in enumerate(descriptions):
+        payload = {
+            "model": "nano-banana-2",
+            "prompt": desc,
+            "aspectRatio": "1:1"
+        }
+        
+        response = make_arcads_request('/v1/nano-banana/generate', payload)
+        img_url = poll_job(response['jobId'])
+        
+        img_data = requests.get(img_url).content
+        filename = desc.replace(' ', '_')[:30]
+        with open(f'{category_path}/{filename}_{i}.jpg', 'wb') as f:
+            f.write(img_data)
+    
+    print(f"Library built: {category_path}/")
+
+# Usage
+build_reference_library('aesthetics/lifestyle
