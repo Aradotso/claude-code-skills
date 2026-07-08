@@ -84,6 +84,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [arcads-ai-video-generation](skills/arcads-ai-video-generation/) | [install](https://skills.sh/aradotso/claude-code-skills/arcads-ai-video-generation) | [krusemediallc/arcads-claude-code](https://github.com/krusemediallc/arcads-claude-code) | 2026-07-08 |
 | [arcads-video-marketing](skills/arcads-video-marketing/) | [install](https://skills.sh/aradotso/claude-code-skills/arcads-video-marketing) | [krusemediallc/arcads-claude-code](https://github.com/krusemediallc/arcads-claude-code) | 2026-07-08 |
 | [arcads-video-agent](skills/arcads-video-agent/) | [install](https://skills.sh/aradotso/claude-code-skills/arcads-video-agent) | [krusemediallc/arcads-claude-code](https://github.com/krusemediallc/arcads-claude-code) | 2026-07-08 |
+| [arcads-ai-video-agent](skills/arcads-ai-video-agent/) | [install](https://skills.sh/aradotso/claude-code-skills/arcads-ai-video-agent) | [krusemediallc/arcads-claude-code](https://github.com/krusemediallc/arcads-claude-code) | 2026-07-08 |
 <!-- SKILL_INDEX -->
 
 ---
