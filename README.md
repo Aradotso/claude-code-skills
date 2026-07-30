@@ -89,6 +89,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [antigravity-for-claude-code](skills/antigravity-for-claude-code/) | [install](https://skills.sh/aradotso/claude-code-skills/antigravity-for-claude-code) | [yuting0624/antigravity-for-claude-code](https://github.com/yuting0624/antigravity-for-claude-code) | 2026-07-17 |
 | [claude-code-migration-kit](skills/claude-code-migration-kit/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-migration-kit) | [anthropics/code-migration-kit-with-claude-code](https://github.com/anthropics/code-migration-kit-with-claude-code) | 2026-07-30 |
 | [open-claudecode-research](skills/open-claudecode-research/) | [install](https://skills.sh/aradotso/claude-code-skills/open-claudecode-research) | [LING71671/Open-ClaudeCode](https://github.com/LING71671/Open-ClaudeCode) | 2026-07-30 |
+| [claude-opus-api-suite](skills/claude-opus-api-suite/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-opus-api-suite) | [PlateChameleon/claude-code-ultimate-suite](https://github.com/PlateChameleon/claude-code-ultimate-suite) | 2026-07-30 |
 <!-- SKILL_INDEX -->
 
 ---
