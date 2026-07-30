@@ -87,6 +87,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [arcads-ai-video-agent](skills/arcads-ai-video-agent/) | [install](https://skills.sh/aradotso/claude-code-skills/arcads-ai-video-agent) | [krusemediallc/arcads-claude-code](https://github.com/krusemediallc/arcads-claude-code) | 2026-07-08 |
 | [claude-codex-usage-dashboard](skills/claude-codex-usage-dashboard/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-codex-usage-dashboard) | [frankchiu-dev/claude-codex-usage-dashboard](https://github.com/frankchiu-dev/claude-codex-usage-dashboard) | 2026-07-14 |
 | [antigravity-for-claude-code](skills/antigravity-for-claude-code/) | [install](https://skills.sh/aradotso/claude-code-skills/antigravity-for-claude-code) | [yuting0624/antigravity-for-claude-code](https://github.com/yuting0624/antigravity-for-claude-code) | 2026-07-17 |
+| [claude-code-migration-kit](skills/claude-code-migration-kit/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-migration-kit) | [anthropics/code-migration-kit-with-claude-code](https://github.com/anthropics/code-migration-kit-with-claude-code) | 2026-07-30 |
 <!-- SKILL_INDEX -->
 
 ---
