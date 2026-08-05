@@ -93,6 +93,7 @@ npx skills add Aradotso/claude-code-skills --skill <skill-name>
 | [claude-ai-ultimate-suite](skills/claude-ai-ultimate-suite/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-ai-ultimate-suite) | [PlateChameleon/claude-code-ultimate-suite](https://github.com/PlateChameleon/claude-code-ultimate-suite) | 2026-07-30 |
 | [claude-code-memory-obsidian-graphify](skills/claude-code-memory-obsidian-graphify/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-memory-obsidian-graphify) | [lucasrosati/claude-code-memory-setup](https://github.com/lucasrosati/claude-code-memory-setup) | 2026-08-03 |
 | [claude-code-agent-monitor](skills/claude-code-agent-monitor/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-agent-monitor) | [hoangsonww/Claude-Code-Agent-Monitor](https://github.com/hoangsonww/Claude-Code-Agent-Monitor) | 2026-08-03 |
+| [claude-code-agent-design](skills/claude-code-agent-design/) | [install](https://skills.sh/aradotso/claude-code-skills/claude-code-agent-design) | [6551Team/claude-code-design-guide](https://github.com/6551Team/claude-code-design-guide) | 2026-08-05 |
 <!-- SKILL_INDEX -->
 
 ---
